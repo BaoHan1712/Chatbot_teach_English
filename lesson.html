@@ -37,7 +37,7 @@
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">📚 Bài Tập Tiếng Anh</h1>
-            <p class="text-gray-600">Học từ vựng và hội thoại về chủ đề Gia Đình</p>
+            <p class="text-gray-600">Học từ vựng và hội thoại về mọi chủ đề bạn thích/p>
         </div>
 
         <!-- Topic Input Section -->
@@ -62,17 +62,15 @@
                 </div>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Backend API:</label>
                 <div class="bg-gray-100 p-3 rounded-lg">
-                    <code class="text-sm text-gray-600">http://localhost:5000/generate/lesson/&lt;topic&gt;</code>
-                    <p class="text-xs text-gray-500 mt-1">Backend đang chạy trên port 5000</p>
+
                 </div>
             </div>
             <button 
                 onclick="loadSampleData()" 
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
-                📝 Sử dụng dữ liệu mẫu (Family)
+                📝 Sử dụng mẫu Family
             </button>
         </div>
 
@@ -439,14 +437,14 @@
 
             lessonData.conversation.forEach((item, index) => {
                 const message = document.createElement('div');
-                const isA = item.speaker === 'A';
+                const isA = item.speaker === 'A' || item.speaker === 'Person A';
                 
                 message.className = `flex ${isA ? 'justify-start' : 'justify-end'} fade-in`;
                 message.style.animationDelay = `${index * 0.2}s`;
                 
                 message.innerHTML = `
                     <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${isA ? 'bg-gray-100 text-gray-800' : 'bg-blue-600 text-white'}">
-                        <div class="font-semibold text-sm mb-1">Người ${item.speaker}</div>
+                        <div class="font-semibold text-sm mb-1">${item.speaker === 'Person A' ? 'Người A' : item.speaker === 'Person B' ? 'Người B' : `Người ${item.speaker}`}</div>
                         <p class="mb-2">${item.text}</p>
                         <p class="text-xs opacity-75 italic">${item.translation}</p>
                         <button onclick="speakSentence('${item.text.replace(/'/g, "\\'")}')" class="mt-2 ${isA ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-blue-500 hover:bg-blue-400 text-white'} px-2 py-1 rounded-full text-xs transition-colors">
@@ -491,12 +489,13 @@
                         </div>
                     `;
                 } else if (exercise.type === 'sentence_order') {
+                    const words = exercise.scrambled || exercise.words || [];
                     exerciseHTML = `
                         <div class="mb-4">
                             <h4 class="text-lg font-semibold text-gray-800 mb-3">🔤 Sắp xếp từ thành câu</h4>
-                            <p class="text-gray-600 mb-3">Sắp xếp các từ sau thành câu hoàn chỉnh:</p>
+                            <p class="text-gray-600 mb-3">${exercise.question || 'Sắp xếp các từ sau thành câu hoàn chỉnh:'}</p>
                             <div class="flex flex-wrap gap-2 mb-4">
-                                ${exercise.scrambled.map(word => `
+                                ${words.map(word => `
                                     <span class="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-300 transition-colors order-word" 
                                           data-word="${word}" onclick="selectWord(this)">
                                         ${word}
@@ -513,22 +512,24 @@
                         </div>
                     `;
                 } else if (exercise.type === 'make_sentence') {
+                    const words = exercise.words || [exercise.word];
+                    const wordText = words.join(', ');
                     exerciseHTML = `
                         <div class="mb-4">
                             <h4 class="text-lg font-semibold text-gray-800 mb-3">✏️ Tạo câu với từ</h4>
-                            <p class="text-gray-600 mb-3">Tạo một câu hoàn chỉnh với từ: <strong>${exercise.word}</strong></p>
+                            <p class="text-gray-600 mb-3">${exercise.question || `Tạo một câu hoàn chỉnh với từ: <strong>${wordText}</strong>`}</p>
                             <textarea 
                                 class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                                 placeholder="Nhập câu của bạn ở đây..."
                                 rows="3"
                                 id="sentence-input-${index}">
                             </textarea>
-                            <button onclick="checkMakeSentence('${exercise.example}', ${index})" 
+                            <button onclick="checkMakeSentence('${exercise.answer || exercise.example}', ${index})" 
                                     class="mt-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
                                 Kiểm tra
                             </button>
                             <div class="mt-3 p-3 bg-gray-50 rounded-lg hidden" id="example-${index}">
-                                <p class="text-sm text-gray-600">Ví dụ: ${exercise.example}</p>
+                                <p class="text-sm text-gray-600">Ví dụ: ${exercise.answer || exercise.example}</p>
                             </div>
                         </div>
                     `;

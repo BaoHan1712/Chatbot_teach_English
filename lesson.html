@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Tập Tiếng Anh - Family</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .pronunciation {
+            color: #e53e3e;
+            font-style: italic;
+        }
+        .exercise-option:hover {
+            transform: translateY(-2px);
+        }
+        .order-word {
+            transition: all 0.2s ease;
+        }
+        .order-word:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">📚 Bài Tập Tiếng Anh</h1>
+            <p class="text-gray-600">Học từ vựng và hội thoại về chủ đề Gia Đình</p>
+        </div>
+
+        <!-- Topic Input Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">📚 Tạo Bài Học Mới</h2>
+            <div class="mb-4">
+                <label for="topicInput" class="block text-sm font-medium text-gray-700 mb-2">Nhập chủ đề bạn muốn học:</label>
+                <div class="flex gap-4">
+                    <input 
+                        type="text" 
+                        id="topicInput" 
+                        placeholder="Ví dụ: Family, Food, Animals, School..." 
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onkeypress="if(event.key==='Enter') generateLesson()"
+                    >
+                    <button 
+                        onclick="generateLesson()" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    >
+                        🚀 Tạo Bài Học
+                    </button>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Backend API:</label>
+                <div class="bg-gray-100 p-3 rounded-lg">
+                    <code class="text-sm text-gray-600">http://localhost:5000/generate/lesson/&lt;topic&gt;</code>
+                    <p class="text-xs text-gray-500 mt-1">Backend đang chạy trên port 5000</p>
+                </div>
+            </div>
+            <button 
+                onclick="loadSampleData()" 
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+                📝 Sử dụng dữ liệu mẫu (Family)
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p class="mt-2 text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p class="text-red-700">❌ <span id="errorMessage"></span></p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="content" class="hidden">
+            <!-- Navigation Tabs -->
+            <div class="flex flex-wrap gap-2 mb-6 bg-white rounded-xl p-2 shadow-lg">
+                <button onclick="showTab('vocabulary')" id="tab-vocabulary" class="tab-active px-6 py-3 rounded-lg font-medium transition-all">
+                    📖 Từ Vựng
+                </button>
+                <button onclick="showTab('examples')" id="tab-examples" class="px-6 py-3 rounded-lg font-medium transition-all hover:bg-gray-100">
+                    💡 Ví Dụ
+                </button>
+                <button onclick="showTab('conversation')" id="tab-conversation" class="px-6 py-3 rounded-lg font-medium transition-all hover:bg-gray-100">
+                    💬 Hội Thoại
+                </button>
+                <button onclick="showTab('exercises')" id="tab-exercises" class="px-6 py-3 rounded-lg font-medium transition-all hover:bg-gray-100">
+                    🎯 Bài Tập
+                </button>
+            </div>
+
+            <!-- Vocabulary Tab -->
+            <div id="vocabulary-content" class="tab-content">
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" id="vocabularyList">
+                    <!-- Vocabulary cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Examples Tab -->
+            <div id="examples-content" class="tab-content hidden">
+                <div class="space-y-4" id="examplesList">
+                    <!-- Example sentences will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Conversation Tab -->
+            <div id="conversation-content" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">🗣️ Hội Thoại Mẫu</h3>
+                    <div class="space-y-4" id="conversationList">
+                        <!-- Conversation will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercises Tab -->
+            <div id="exercises-content" class="tab-content hidden">
+                <div class="space-y-6" id="exercisesList">
+                    <!-- Exercises will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lessonData = null;
+
+        // Sample data matching the backend structure
+        const sampleData = {
+            "topic": "Family",
+            "vocabulary": [
+                {
+                    "word": "Family",
+                    "pronunciation": "/ˈfæməli/",
+                    "english_meaning": "A group of people related to each other by blood, marriage, or adoption.",
+                    "vietnamese_meaning": "Gia đình",
+                    "example": "I love my family."
+                },
+                {
+                    "word": "Mother",
+                    "pronunciation": "/ˈmʌðər/",
+                    "english_meaning": "A female parent.",
+                    "vietnamese_meaning": "Mẹ",
+                    "example": "My mother is a teacher."
+                },
+                {
+                    "word": "Father",
+                    "pronunciation": "/ˈfɑːðər/",
+                    "english_meaning": "A male parent.",
+                    "vietnamese_meaning": "Bố",
+                    "example": "My father works in a hospital."
+                },
+                {
+                    "word": "Brother",
+                    "pronunciation": "/ˈbrʌðər/",
+                    "english_meaning": "A male sibling.",
+                    "vietnamese_meaning": "Anh trai/Em trai",
+                    "example": "I have one brother."
+                },
+                {
+                    "word": "Sister",
+                    "pronunciation": "/ˈsɪstər/",
+                    "english_meaning": "A female sibling.",
+                    "vietnamese_meaning": "Chị gái/Em gái",
+                    "example": "My sister is very kind."
+                }
+            ],
+            "example_sentences": [
+                {
+                    "english": "My family is very important to me.",
+                    "translation": "Gia đình của tôi rất quan trọng đối với tôi."
+                },
+                {
+                    "english": "We love spending time with our family.",
+                    "translation": "Chúng tôi thích dành thời gian cho gia đình của mình."
+                },
+                {
+                    "english": "My mother cooks delicious food for us.",
+                    "translation": "Mẹ tôi nấu những món ăn ngon cho chúng tôi."
+                },
+                {
+                    "english": "My father helps me with homework.",
+                    "translation": "Bố tôi giúp tôi làm bài tập về nhà."
+                },
+                {
+                    "english": "I play football with my brother every weekend.",
+                    "translation": "Tôi chơi bóng đá với anh trai mỗi cuối tuần."
+                }
+            ],
+            "conversation": [
+                {
+                    "speaker": "A",
+                    "text": "Hi! How many people are there in your family?",
+                    "translation": "Chào bạn! Gia đình bạn có bao nhiêu người?"
+                },
+                {
+                    "speaker": "B",
+                    "text": "There are four people in my family: my parents, my brother, and me.",
+                    "translation": "Gia đình tôi có bốn người: bố mẹ tôi, anh trai tôi và tôi."
+                },
+                {
+                    "speaker": "A",
+                    "text": "That's nice! I love my family very much.",
+                    "translation": "Tuyệt vời! Tôi rất yêu gia đình của mình."
+                },
+                {
+                    "speaker": "B",
+                    "text": "Me too! Family is the most important thing in life.",
+                    "translation": "Tôi cũng vậy! Gia đình là điều quan trọng nhất trong cuộc sống."
+                }
+            ],
+            "exercises": [
+                {
+                    "type": "fill_in_blank",
+                    "question": "I love my _____ very much.",
+                    "options": ["family", "school", "car", "book"],
+                    "answer": "family"
+                },
+                {
+                    "type": "fill_in_blank",
+                    "question": "My _____ is a teacher.",
+                    "options": ["father", "mother", "brother", "sister"],
+                    "answer": "mother"
+                },
+                {
+                    "type": "fill_in_blank",
+                    "question": "I play football with my _____ every weekend.",
+                    "options": ["sister", "brother", "mother", "father"],
+                    "answer": "brother"
+                },
+                {
+                    "type": "sentence_order",
+                    "scrambled": ["my", "family", "I", "love", "very", "much"],
+                    "answer": "I love my family very much."
+                },
+                {
+                    "type": "sentence_order",
+                    "scrambled": ["mother", "my", "is", "teacher", "a"],
+                    "answer": "My mother is a teacher."
+                },
+                {
+                    "type": "sentence_order",
+                    "scrambled": ["father", "works", "my", "hospital", "in", "a"],
+                    "answer": "My father works in a hospital."
+                },
+                {
+                    "type": "make_sentence",
+                    "word": "family",
+                    "example": "I love my family very much."
+                },
+                {
+                    "type": "make_sentence",
+                    "word": "brother",
+                    "example": "I have one brother."
+                },
+                {
+                    "type": "make_sentence",
+                    "word": "sister",
+                    "example": "My sister is very kind."
+                }
+            ]
+        };
+
+        async function generateLesson() {
+            const topic = document.getElementById('topicInput').value.trim();
+            
+            if (!topic) {
+                showError('Vui lòng nhập chủ đề bạn muốn học');
+                return;
+            }
+
+
+            showLoading(true);
+            hideError();
+
+            try {
+                // Sử dụng endpoint mới từ backend
+                const response = await fetch(`http://localhost:5000/generate/lesson/${encodeURIComponent(topic)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('📊 Received data:', data);
+                
+                // Validate data structure
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Dữ liệu không hợp lệ');
+                }
+                
+                // Đảm bảo các mảng tồn tại
+                if (!Array.isArray(data.vocabulary)) {
+                    data.vocabulary = [];
+                }
+                if (!Array.isArray(data.example_sentences)) {
+                    data.example_sentences = [];
+                }
+                if (!Array.isArray(data.conversation)) {
+                    data.conversation = [];
+                }
+                if (!Array.isArray(data.exercises)) {
+                    data.exercises = [];
+                }
+                
+                console.log('✅ Data validated:', {
+                    vocabulary: data.vocabulary.length,
+                    examples: data.example_sentences.length,
+                    conversation: data.conversation.length,
+                    exercises: data.exercises.length
+                });
+
+                lessonData = data;
+                displayLessonData();
+                showLoading(false);
+                
+                // Update header with the topic
+                document.querySelector('h1').textContent = `📚 Bài Tập Tiếng Anh - ${topic}`;
+                
+            } catch (error) {
+                showLoading(false);
+                showError(`Lỗi khi tạo bài học: ${error.message}`);
+                console.error('Generate lesson error:', error);
+            }
+        }
+
+        function loadSampleData() {
+            lessonData = sampleData;
+            displayLessonData();
+            hideError();
+        }
+
+        function displayLessonData() {
+            if (!lessonData) return;
+
+            document.getElementById('content').classList.remove('hidden');
+            
+            displayVocabulary();
+            displayExamples();
+            displayConversation();
+            displayExercises();
+        }
+
+        function displayVocabulary() {
+            const container = document.getElementById('vocabularyList');
+            container.innerHTML = '';
+
+            if (!lessonData || !lessonData.vocabulary || !Array.isArray(lessonData.vocabulary)) {
+                container.innerHTML = '<p class="text-gray-600 text-center">Không có từ vựng nào.</p>';
+                return;
+            }
+
+            lessonData.vocabulary.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow fade-in';
+                card.style.animationDelay = `${index * 0.1}s`;
+                
+                card.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-blue-600 mb-2">${item.word}</h3>
+                        ${item.pronunciation ? `<p class="pronunciation text-sm mb-3">${item.pronunciation}</p>` : ''}
+                        <div class="border-t pt-3">
+                            <p class="text-gray-700 mb-2 text-sm">${item.english_meaning}</p>
+                            <p class="text-lg font-semibold text-green-600">${item.vietnamese_meaning}</p>
+                            ${item.example ? `<p class="text-sm text-blue-600 mt-2 italic">"${item.example}"</p>` : ''}
+                        </div>
+                        <button onclick="speakWord('${item.word}')" class="mt-3 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm transition-colors">
+                            🔊 Phát âm
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function displayExamples() {
+            const container = document.getElementById('examplesList');
+            container.innerHTML = '';
+
+            if (!lessonData || !lessonData.example_sentences || !Array.isArray(lessonData.example_sentences)) {
+                container.innerHTML = '<p class="text-gray-600 text-center">Không có ví dụ nào.</p>';
+                return;
+            }
+
+            lessonData.example_sentences.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-lg p-6 fade-in';
+                card.style.animationDelay = `${index * 0.1}s`;
+                
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                            ${index + 1}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-lg text-gray-800 mb-2">"${item.english}"</p>
+                            <p class="text-gray-600 italic">${item.translation}</p>
+                            <button onclick="speakSentence('${item.english.replace(/'/g, "\\'")}')" class="mt-2 bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm transition-colors">
+                                🔊 Nghe câu
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function displayConversation() {
+            const container = document.getElementById('conversationList');
+            container.innerHTML = '';
+
+            if (!lessonData || !lessonData.conversation || !Array.isArray(lessonData.conversation)) {
+                container.innerHTML = '<p class="text-gray-600 text-center">Không có hội thoại nào.</p>';
+                return;
+            }
+
+            lessonData.conversation.forEach((item, index) => {
+                const message = document.createElement('div');
+                const isA = item.speaker === 'A';
+                
+                message.className = `flex ${isA ? 'justify-start' : 'justify-end'} fade-in`;
+                message.style.animationDelay = `${index * 0.2}s`;
+                
+                message.innerHTML = `
+                    <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${isA ? 'bg-gray-100 text-gray-800' : 'bg-blue-600 text-white'}">
+                        <div class="font-semibold text-sm mb-1">Người ${item.speaker}</div>
+                        <p class="mb-2">${item.text}</p>
+                        <p class="text-xs opacity-75 italic">${item.translation}</p>
+                        <button onclick="speakSentence('${item.text.replace(/'/g, "\\'")}')" class="mt-2 ${isA ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-blue-500 hover:bg-blue-400 text-white'} px-2 py-1 rounded-full text-xs transition-colors">
+                            🔊
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(message);
+            });
+        }
+
+        function displayExercises() {
+            const container = document.getElementById('exercisesList');
+            container.innerHTML = '';
+
+            if (!lessonData.exercises || lessonData.exercises.length === 0) {
+                container.innerHTML = '<p class="text-gray-600 text-center">Chưa có bài tập nào.</p>';
+                return;
+            }
+
+            lessonData.exercises.forEach((exercise, index) => {
+                const exerciseCard = document.createElement('div');
+                exerciseCard.className = 'bg-white rounded-xl shadow-lg p-6 fade-in';
+                exerciseCard.style.animationDelay = `${index * 0.1}s`;
+                
+                let exerciseHTML = '';
+                
+                if (exercise.type === 'fill_in_blank') {
+                    exerciseHTML = `
+                        <div class="mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">📝 Điền từ vào chỗ trống</h4>
+                            <p class="text-gray-700 mb-4">${exercise.question}</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                ${exercise.options.map(option => `
+                                    <button onclick="checkFillAnswer('${option}', '${exercise.answer}', this)" 
+                                            class="exercise-option bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg transition-colors text-sm">
+                                        ${option}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else if (exercise.type === 'sentence_order') {
+                    exerciseHTML = `
+                        <div class="mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">🔤 Sắp xếp từ thành câu</h4>
+                            <p class="text-gray-600 mb-3">Sắp xếp các từ sau thành câu hoàn chỉnh:</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                ${exercise.scrambled.map(word => `
+                                    <span class="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-300 transition-colors order-word" 
+                                          data-word="${word}" onclick="selectWord(this)">
+                                        ${word}
+                                    </span>
+                                `).join('')}
+                            </div>
+                            <div class="bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-4 mb-4 min-h-[50px]" id="sentence-area-${index}">
+                                <p class="text-gray-500 text-sm">Kéo các từ vào đây để tạo câu</p>
+                            </div>
+                            <button onclick="checkSentenceOrder('${exercise.answer}', ${index})" 
+                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                                Kiểm tra
+                            </button>
+                        </div>
+                    `;
+                } else if (exercise.type === 'make_sentence') {
+                    exerciseHTML = `
+                        <div class="mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">✏️ Tạo câu với từ</h4>
+                            <p class="text-gray-600 mb-3">Tạo một câu hoàn chỉnh với từ: <strong>${exercise.word}</strong></p>
+                            <textarea 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                placeholder="Nhập câu của bạn ở đây..."
+                                rows="3"
+                                id="sentence-input-${index}">
+                            </textarea>
+                            <button onclick="checkMakeSentence('${exercise.example}', ${index})" 
+                                    class="mt-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
+                                Kiểm tra
+                            </button>
+                            <div class="mt-3 p-3 bg-gray-50 rounded-lg hidden" id="example-${index}">
+                                <p class="text-sm text-gray-600">Ví dụ: ${exercise.example}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                exerciseCard.innerHTML = exerciseHTML;
+                container.appendChild(exerciseCard);
+            });
+        }
+
+        function checkFillAnswer(selected, correct, button) {
+            const allButtons = button.parentElement.querySelectorAll('.exercise-option');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.trim() === correct) {
+                    btn.className = 'exercise-option bg-green-500 text-white px-4 py-2 rounded-lg text-sm';
+                } else if (btn.textContent.trim() === selected && selected !== correct) {
+                    btn.className = 'exercise-option bg-red-500 text-white px-4 py-2 rounded-lg text-sm';
+                }
+            });
+        }
+
+        function selectWord(wordElement) {
+            const sentenceArea = wordElement.closest('.bg-white').querySelector('[id^="sentence-area-"]');
+            
+            if (wordElement.classList.contains('selected')) {
+                // Nếu đã chọn, bỏ chọn
+                wordElement.classList.remove('selected', 'bg-blue-500', 'text-white');
+                wordElement.classList.add('bg-gray-200', 'text-gray-800');
+                // Xóa khỏi sentence area
+                const existingWord = sentenceArea.querySelector(`[data-word="${wordElement.dataset.word}"]`);
+                if (existingWord) {
+                    existingWord.remove();
+                }
+            } else {
+                // Nếu chưa chọn, thêm vào sentence area
+                wordElement.classList.add('selected', 'bg-blue-500', 'text-white');
+                wordElement.classList.remove('bg-gray-200', 'text-gray-800');
+                
+                const newWord = document.createElement('span');
+                newWord.className = 'bg-blue-500 text-white px-3 py-2 rounded-lg text-sm cursor-pointer mr-2 mb-2 inline-block order-word';
+                newWord.textContent = wordElement.dataset.word;
+                newWord.dataset.word = wordElement.dataset.word;
+                newWord.onclick = function() {
+                    selectWord(wordElement);
+                };
+                
+                // Xóa placeholder text nếu có
+                const placeholder = sentenceArea.querySelector('p');
+                if (placeholder && placeholder.textContent.includes('Kéo các từ')) {
+                    placeholder.remove();
+                }
+                
+                sentenceArea.appendChild(newWord);
+            }
+        }
+
+        function checkSentenceOrder(correctAnswer, exerciseIndex) {
+            const sentenceArea = document.getElementById(`sentence-area-${exerciseIndex}`);
+            const selectedWords = sentenceArea.querySelectorAll('.order-word');
+            const userAnswer = Array.from(selectedWords).map(word => word.textContent.trim()).join(' ');
+            
+            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+                sentenceArea.className = 'bg-green-50 border-2 border-green-500 rounded-lg p-4 mb-4 min-h-[50px]';
+                sentenceArea.innerHTML = `<p class="text-green-700 font-semibold">✓ Đúng rồi! ${correctAnswer}</p>`;
+            } else {
+                sentenceArea.className = 'bg-red-50 border-2 border-red-500 rounded-lg p-4 mb-4 min-h-[50px]';
+                sentenceArea.innerHTML = `<p class="text-red-700">✗ Chưa đúng. Đáp án: ${correctAnswer}</p>`;
+            }
+        }
+
+        function checkMakeSentence(example, exerciseIndex) {
+            const input = document.getElementById(`sentence-input-${exerciseIndex}`);
+            const exampleDiv = document.getElementById(`example-${exerciseIndex}`);
+            
+            if (input.value.trim()) {
+                exampleDiv.classList.remove('hidden');
+                input.disabled = true;
+            }
+        }
+
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function speakSentence(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+                tab.className = 'px-6 py-3 rounded-lg font-medium transition-all hover:bg-gray-100';
+            });
+            
+            // Show selected tab content
+            document.getElementById(`${tabName}-content`).classList.remove('hidden');
+            
+            // Add active class to selected tab
+            document.getElementById(`tab-${tabName}`).className = 'tab-active px-6 py-3 rounded-lg font-medium transition-all';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('hidden', !show);
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('error').classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        // Initialize with sample data
+        window.addEventListener('load', () => {
+            loadSampleData();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9842899c03318515',t:'MTc1ODcxOTU5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

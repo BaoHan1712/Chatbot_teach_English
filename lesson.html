@@ -119,10 +119,12 @@
 
             <!-- Conversation Tab -->
             <div id="conversation-content" class="tab-content hidden">
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">🗣️ Hội Thoại Mẫu</h3>
-                    <div class="space-y-4" id="conversationList">
-                        <!-- Conversation will be inserted here -->
+                <div class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold mb-6 text-gray-800 text-center">🗣️ Hội Thoại Mẫu</h3>
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-2xl shadow-inner p-6 min-h-96 max-h-[500px] overflow-y-auto" id="conversationList">
+                            <!-- Conversation will be inserted here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,24 +205,44 @@
             ],
             "conversation": [
                 {
-                    "speaker": "A",
+                    "speaker": "Person A",
                     "text": "Hi! How many people are there in your family?",
                     "translation": "Chào bạn! Gia đình bạn có bao nhiêu người?"
                 },
                 {
-                    "speaker": "B",
+                    "speaker": "Person B",
                     "text": "There are four people in my family: my parents, my brother, and me.",
                     "translation": "Gia đình tôi có bốn người: bố mẹ tôi, anh trai tôi và tôi."
                 },
                 {
-                    "speaker": "A",
-                    "text": "That's nice! I love my family very much.",
-                    "translation": "Tuyệt vời! Tôi rất yêu gia đình của mình."
+                    "speaker": "Person A",
+                    "text": "That's nice! What does your father do for work?",
+                    "translation": "Tuyệt vời! Bố bạn làm nghề gì?"
                 },
                 {
-                    "speaker": "B",
-                    "text": "Me too! Family is the most important thing in life.",
-                    "translation": "Tôi cũng vậy! Gia đình là điều quan trọng nhất trong cuộc sống."
+                    "speaker": "Person B",
+                    "text": "My father is a teacher. He works at a school near our house.",
+                    "translation": "Bố tôi là giáo viên. Ông ấy làm việc ở một trường học gần nhà chúng tôi."
+                },
+                {
+                    "speaker": "Person A",
+                    "text": "That's great! And what about your mother?",
+                    "translation": "Thật tuyệt! Còn mẹ bạn thì sao?"
+                },
+                {
+                    "speaker": "Person B",
+                    "text": "My mother is a doctor. She works at the hospital.",
+                    "translation": "Mẹ tôi là bác sĩ. Bà ấy làm việc ở bệnh viện."
+                },
+                {
+                    "speaker": "Person A",
+                    "text": "Wow! Your family sounds amazing. I love my family too!",
+                    "translation": "Wow! Gia đình bạn nghe thật tuyệt vời. Tôi cũng rất yêu gia đình của mình!"
+                },
+                {
+                    "speaker": "Person B",
+                    "text": "Thank you! Family is the most important thing in life.",
+                    "translation": "Cảm ơn bạn! Gia đình là điều quan trọng nhất trong cuộc sống."
                 }
             ],
             "exercises": [
@@ -438,18 +460,47 @@
             lessonData.conversation.forEach((item, index) => {
                 const message = document.createElement('div');
                 const isA = item.speaker === 'A' || item.speaker === 'Person A';
+                const speakerName = item.speaker === 'Person A' ? 'Người A' : item.speaker === 'Person B' ? 'Người B' : `Người ${item.speaker}`;
                 
-                message.className = `flex ${isA ? 'justify-start' : 'justify-end'} fade-in`;
+                message.className = `flex ${isA ? 'justify-start' : 'justify-end'} mb-4 fade-in`;
                 message.style.animationDelay = `${index * 0.2}s`;
                 
                 message.innerHTML = `
-                    <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${isA ? 'bg-gray-100 text-gray-800' : 'bg-blue-600 text-white'}">
-                        <div class="font-semibold text-sm mb-1">${item.speaker === 'Person A' ? 'Người A' : item.speaker === 'Person B' ? 'Người B' : `Người ${item.speaker}`}</div>
-                        <p class="mb-2">${item.text}</p>
-                        <p class="text-xs opacity-75 italic">${item.translation}</p>
-                        <button onclick="speakSentence('${item.text.replace(/'/g, "\\'")}')" class="mt-2 ${isA ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-blue-500 hover:bg-blue-400 text-white'} px-2 py-1 rounded-full text-xs transition-colors">
-                            🔊
-                        </button>
+                    <div class="flex ${isA ? 'flex-row' : 'flex-row-reverse'} items-start space-x-3 max-w-2xl">
+                        <!-- Avatar -->
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${isA ? 'bg-gray-200' : 'bg-blue-500'}">
+                            <span class="text-lg">${isA ? '👤' : '🤖'}</span>
+                        </div>
+                        
+                        <!-- Message Content -->
+                        <div class="flex flex-col ${isA ? 'items-start' : 'items-end'}">
+                            <!-- Speaker Name -->
+                            <div class="text-xs text-gray-500 mb-1 px-2">
+                                ${speakerName}
+                            </div>
+                            
+                            <!-- Message Bubble -->
+                            <div class="relative px-4 py-3 rounded-2xl ${isA ? 'bg-white border border-gray-200 text-gray-800' : 'bg-blue-600 text-white'} shadow-sm">
+                                <!-- Message Text -->
+                                <p class="mb-2 leading-relaxed">${item.text}</p>
+                                
+                                <!-- Translation -->
+                                <div class="border-t ${isA ? 'border-gray-100' : 'border-blue-400'} pt-2 mt-2">
+                                    <p class="text-xs ${isA ? 'text-gray-500' : 'text-blue-100'} italic">${item.translation}</p>
+                                </div>
+                                
+                                <!-- Speech Button -->
+                                <button onclick="speakSentence('${item.text.replace(/'/g, "\\'")}')" 
+                                        class="absolute ${isA ? '-right-2 -bottom-2' : '-left-2 -bottom-2'} w-8 h-8 rounded-full ${isA ? 'bg-gray-100 hover:bg-gray-200 text-gray-600' : 'bg-blue-500 hover:bg-blue-400 text-white'} flex items-center justify-center text-xs transition-colors shadow-md">
+                                    🔊
+                                </button>
+                            </div>
+                            
+                            <!-- Message Time (optional) -->
+                            <div class="text-xs text-gray-400 mt-1 px-2">
+                                ${String(index + 1).padStart(2, '0')}:00
+                            </div>
+                        </div>
                     </div>
                 `;
                 

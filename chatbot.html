@@ -7,98 +7,53 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        
+
+        * { font-family: 'Inter', sans-serif; }
+
         .gradient-bg {
             background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
         }
-        
+
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        .message-animation {
-            animation: slideInUp 0.3s ease-out;
-        }
-        
-        .typing-animation {
-            animation: pulse 1.5s infinite;
-        }
-        
-        .send-button:hover {
-            transform: scale(1.05);
-            transition: all 0.2s ease;
-        }
-        
-        .floating-particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-        }
-        
+
+        .message-animation { animation: slideInUp 0.3s ease-out; }
+        .typing-animation { animation: pulse 1.5s infinite; }
+
+        .send-button:hover { transform: scale(1.05); transition: all 0.2s ease; }
+
+        .floating-particles { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
         .particle {
             position: absolute;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             animation: float 6s infinite linear;
         }
-        
+
         @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-        
+
+        @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
         @keyframes float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-                opacity: 0;
-            }
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%,90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
         }
-        
-        .message-bubble {
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        
-        .user-message {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            color: white;
-        }
-        
-        .bot-message {
-            background: #f8fafc;
-            color: #334155;
-            border: 1px solid #e2e8f0;
-        }
-        
+
+        .message-bubble { max-width: 80%; word-wrap: break-word; }
+
+        .user-message { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; }
+        .bot-message { background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; }
+        .bot-message-english { background: #e0f2fe; color: #0c4a6e; border: 1px solid #bae6fd; }
+        .bot-message-vietnamese { background: #fff7ed; color: #92400e; border: 1px solid #ffd8a8; }
+        .bot-message-correction { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+
         .input-focus:focus {
             box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
             border-color: #0ea5e9;
@@ -106,6 +61,7 @@
     </style>
 </head>
 <body class="gradient-bg min-h-screen relative">
+
     <!-- Floating Particles Background -->
     <div class="floating-particles">
         <div class="particle" style="left: 10%; width: 4px; height: 4px; animation-delay: 0s;"></div>
@@ -135,7 +91,7 @@
                         <span class="text-xl">🤖</span>
                     </div>
                     <div>
-                        <h3 class="font-semibold">AI Assistant</h3>
+                        <h3 class="font-semibold">AI Teacher 😎</h3>
                         <p class="text-sm text-blue-100">Đang hoạt động</p>
                     </div>
                     <div class="ml-auto">
@@ -146,7 +102,6 @@
 
             <!-- Chat Messages -->
             <div id="chatMessages" class="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white">
-                <!-- Welcome Message -->
                 <div class="flex items-start space-x-3 message-animation">
                     <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <span class="text-white text-sm">🤖</span>
@@ -194,7 +149,7 @@
 
         <!-- Footer -->
         <div class="text-center mt-8">
-            <p class="text-blue-100 text-sm">Được tạo bởi AI • Trải nghiệm chat thông minh</p>
+            <p class="text-blue-100 text-sm">Trải nghiệm chatbot thông minh</p>
         </div>
     </div>
 
@@ -204,32 +159,23 @@
         const chatForm = document.getElementById('chatForm');
         const typingIndicator = document.getElementById('typingIndicator');
 
-        // Sample bot responses
-        const botResponses = [
-            "Đó là một câu hỏi thú vị! Tôi sẽ cần suy nghĩ về điều này... 🤔",
-            "Cảm ơn bạn đã chia sẻ! Tôi hiểu ý bạn rồi. 😊",
-            "Tôi có thể giúp bạn với vấn đề đó. Hãy cho tôi biết thêm chi tiết nhé!",
-            "Thật tuyệt vời! Bạn có muốn tôi giải thích thêm không? ✨",
-            "Đây là một chủ đề rất hay. Tôi rất vui được thảo luận với bạn! 🎉",
-            "Hmm, để tôi suy nghĩ... Tôi nghĩ câu trả lời là... 💭",
-            "Bạn nói đúng đấy! Tôi hoàn toàn đồng ý với quan điểm của bạn. 👍"
-        ];
-
-        function addMessage(message, isUser = false) {
+        function addMessage(message, isUser = false, customClass = null) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `flex items-start space-x-3 message-animation ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
-            
+
             const avatar = document.createElement('div');
             avatar.className = `w-8 h-8 ${isUser ? 'bg-sky-500' : 'bg-blue-500'} rounded-full flex items-center justify-center flex-shrink-0`;
             avatar.innerHTML = `<span class="text-white text-sm">${isUser ? '👤' : '🤖'}</span>`;
-            
+
             const messageBubble = document.createElement('div');
-            messageBubble.className = `message-bubble ${isUser ? 'user-message' : 'bot-message'} p-3 rounded-2xl ${isUser ? 'rounded-tr-md' : 'rounded-tl-md'} shadow-sm`;
+            let bubbleClass = isUser ? 'user-message' : 'bot-message';
+            if (customClass) bubbleClass = customClass;
+            messageBubble.className = `message-bubble ${bubbleClass} p-3 rounded-2xl ${isUser ? 'rounded-tr-md' : 'rounded-tl-md'} shadow-sm`;
             messageBubble.innerHTML = `<p>${message}</p>`;
-            
+
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(messageBubble);
-            
+
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -243,39 +189,43 @@
             typingIndicator.classList.add('hidden');
         }
 
-        function getBotResponse() {
-            return botResponses[Math.floor(Math.random() * botResponses.length)];
-        }
-
-        chatForm.addEventListener('submit', function(e) {
+        chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const message = messageInput.value.trim();
             if (!message) return;
-            
-            // Add user message
+
             addMessage(message, true);
             messageInput.value = '';
-            
-            // Show typing indicator
+
             showTypingIndicator();
-            
-            // Simulate bot response delay
-            setTimeout(() => {
+
+            try {
+                const response = await fetch('http://localhost:5000/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
                 hideTypingIndicator();
-                addMessage(getBotResponse());
-            }, 1000 + Math.random() * 2000);
+
+                if (data.response_english) addMessage(data.response_english, false, 'bot-message-english');
+                if (data.explanation_vietnamese) addMessage(data.explanation_vietnamese, false, 'bot-message-vietnamese');
+                if (data.correction) addMessage("✅ Correction: " + data.correction, false, 'bot-message-correction');
+
+            } catch (err) {
+                hideTypingIndicator();
+                addMessage("❌ Lỗi khi kết nối chatbot: " + err.message);
+            }
         });
 
         // Auto-focus input
         messageInput.focus();
 
-        // Enter key to send message
+        // Enter key to send
         messageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                chatForm.dispatchEvent(new Event('submit'));
-            }
+            if (e.key === 'Enter') chatForm.dispatchEvent(new Event('submit'));
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9840fed064410503',t:'MTc1ODcwMzQxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

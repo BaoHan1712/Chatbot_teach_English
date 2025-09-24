@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learning Hub - Học tiếng Anh cùng AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .fade-in-delay-1 {
+            animation-delay: 0.2s;
+        }
+        
+        .fade-in-delay-2 {
+            animation-delay: 0.4s;
+        }
+        
+        .fade-in-delay-3 {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+        }
+        
+        .button-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .button-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .floating-animation {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-white opacity-5 rounded-full"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white opacity-3 rounded-full"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12 max-w-4xl mx-auto">
+            <!-- Main Title -->
+            <h1 class="fade-in text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                Chào mừng đến với
+                <span class="block bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent floating-animation">
+                    AI Learning Hub
+                </span>
+            </h1>
+            
+            <!-- Tagline -->
+            <p class="fade-in fade-in-delay-1 text-lg md:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
+                Học tiếng Anh và trò chuyện cùng AI dễ dàng
+            </p>
+        </div>
+
+        <!-- Main Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-6 md:gap-8 w-full max-w-2xl mx-auto">
+            <!-- Lesson Button -->
+            <a href="/lesson" class="fade-in fade-in-delay-2 flex-1 group">
+                <div class="button-hover bg-white text-blue-600 rounded-2xl p-8 md:p-10 text-center shadow-xl hover:shadow-2xl border border-blue-100">
+                    <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">🚀</div>
+                    <h2 class="text-xl md:text-2xl font-bold mb-3">Làm bài tập cùng AI</h2>
+                    <p class="text-blue-500 text-sm md:text-base opacity-80">
+                        Học từ vựng, ngữ pháp với AI thông minh
+                    </p>
+                </div>
+            </a>
+
+            <!-- Chat Button -->
+    
+            <a href="/chatbot" class="fade-in fade-in-delay-3 flex-1 group">
+                <div class="button-hover bg-white text-blue-600 rounded-2xl p-8 md:p-10 text-center shadow-xl hover:shadow-2xl border border-blue-100">
+                    <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">💬</div>
+                    <h2 class="text-xl md:text-2xl font-bold mb-3">Chatbot với AI</h2>
+                    <p class="text-blue-500 text-sm md:text-base opacity-80">
+                        Trò chuyện tự nhiên để luyện tiếng Anh
+                    </p>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Additional Info -->
+        <div class="fade-in fade-in-delay-3 mt-12 text-center">
+            <p class="text-blue-100 text-sm md:text-base opacity-75">
+                ✨ Được hỗ trợ bởi công nghệ AI tiên tiến
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+            <p class="text-blue-200 text-xs opacity-60">
+                © 2024 AI Learning Hub. Tất cả quyền được bảo lưu.
+            </p>
+        </div>
+    </div>
+
+    <!-- Mobile Optimization Script -->
+    <script>
+        // Ensure proper mobile viewport handling
+        function adjustViewport() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        window.addEventListener('resize', adjustViewport);
+        window.addEventListener('orientationchange', adjustViewport);
+        adjustViewport();
+
+        // Add click feedback for mobile
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            
+            link.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+        });
+
+        // Preload hover states for better performance
+        window.addEventListener('load', function() {
+            const buttons = document.querySelectorAll('.button-hover');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.willChange = 'transform, box-shadow';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.willChange = 'auto';
+                });
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9842fdc104b0e2e7',t:'MTc1ODcyNDM0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

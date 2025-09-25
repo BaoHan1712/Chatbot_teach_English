@@ -41,17 +41,17 @@ agent = EnglishTeachingAgent(api_key=API_KEY)
 
 @app.route('/')
 def index():
-    return send_file('index.html')
+    return send_file('UI/index.html')
 
 # Trang bài học
 @app.route('/lesson')
 def lesson_page():
-    return send_file('lesson.html')
+    return send_file('UI/lesson.html')
 
 # Trang chatbot
 @app.route('/chatbot')
 def chatbot_page():
-    return send_file('chatbot.html')
+    return send_file('UI/chatbot.html')
 
 
 # API tạo bài học

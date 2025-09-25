@@ -66,6 +66,22 @@ def lesson_page():
 def chatbot_page():
     return render_template("chatbot.html")
 
+#//////////////////////////// ADMIN ////////////////////////////////////////////////////
+# Trang admin quản lý user
+@app.route('/ad_user')
+def ad_user():
+    return render_template("ad_user.html")
+
+# Trang admin quản lý lesson
+@app.route('/ad_lesson')
+def ad_lesson():
+    return render_template("ad_lesson.html")
+
+# Trang admin quản lý query
+@app.route('/ad_query')
+def ad_query():
+    return render_template("ad_query.html")
+
 
 # API tạo bài học
 @app.route('/generate/lesson/<topic>')

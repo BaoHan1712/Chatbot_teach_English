@@ -151,8 +151,8 @@ def chat():
 
     content = response.content
 
-    # Loại bỏ ```json ... ``` nếu có
-    cleaned = re.sub(r"```json\s*|\s*```", "", content).strip()
+    # Loại bỏ ```json, ```, và dấu * thừa
+    cleaned = re.sub(r"```json\s*|\s*```|\*+", "", content).strip()
 
     # Parse JSON
     try:
@@ -160,7 +160,7 @@ def chat():
     except json.JSONDecodeError:
         parsed = {"response_english": cleaned}
 
-    # Chuyển các giá trị null sang string rỗng
+    # Chuẩn hóa kết quả (null -> "")
     result = {
         "response_english": parsed.get("response_english") or "",
         "explanation_vietnamese": parsed.get("explanation_vietnamese") or "",

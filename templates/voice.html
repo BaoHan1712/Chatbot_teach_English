@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1E90FF 0%, #00BFFF 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        /* Navbar */
+        .navbar {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-left, .nav-right {
+            flex: 1;
+        }
+
+        .nav-left {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .nav-right {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .home-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-icon {
+            font-size: 1.2rem;
+        }
+
+        .username {
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 69, 69, 0.8);
+            border: none;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 69, 69, 1);
+            transform: translateY(-1px);
+        }
+
+        /* Main content */
+        .main-content {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 140px);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hero-title {
+            color: white;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Voice interaction area */
+        .voice-container {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .voice-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+            color: #1E90FF;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .voice-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .voice-button.recording {
+            background: linear-gradient(135deg, #FF4444 0%, #FF6666 100%);
+            color: white;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Sound waves animation */
+        .sound-waves {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+        }
+
+        .wave {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .wave.active {
+            animation: ripple 2s ease-out infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 150px;
+                height: 150px;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        /* Status display */
+        .status-display {
+            margin-top: 2rem;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-text {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .status-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .response-area {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            max-width: 600px;
+            margin-top: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .response-area.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .user-speech {
+            color: #FFE4B5;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .ai-response {
+            color: #98FB98;
+            font-weight: 500;
+        }
+
+        /* Button text */
+        .button-text {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        /* Footer */
+        .footer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .home-btn, .user-info {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+
+            .voice-button {
+                width: 120px;
+                height: 120px;
+                font-size: 2.5rem;
+            }
+
+            .response-area {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+
+        /* Loading animation */
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: loadingDots 1.4s ease-in-out infinite both;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes loadingDots {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <button class="home-btn" id="homeBtn">
+                <span>🏠</span>
+                <span>Home</span>
+            </button>
+        </div>
+        <div class="logo">
+            <span>🤖</span>
+            <span>AI Voice</span>
+        </div>
+        <div class="nav-right">
+            <div class="user-info">
+                <span class="user-icon">👤</span>
+                <span class="username" id="usernameDisplay">User</span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <h1 class="hero-title">Your Voice, AI's Understanding</h1>
+        <p class="hero-subtitle">Speak naturally, get instant intelligent responses</p>
+
+        <div class="voice-container">
+            <div class="sound-waves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+            
+            <button class="voice-button" id="voiceButton">
+                <span id="micIcon">🎤</span>
+            </button>
+            
+            <div class="button-text" id="buttonText">Tap to Speak</div>
+        </div>
+
+        <div class="status-display">
+            <div class="status-text" id="statusText"></div>
+            <div class="response-area" id="responseArea">
+                <div class="user-speech" id="userSpeech"></div>
+                <div class="ai-response" id="aiResponse"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <!-- <p>&copy; 2024 AI Voice Assistant. Powered by advanced AI technology.</p> -->
+    </footer>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Voice interaction logic
+        class VoiceAssistant {
+            constructor() {
+                this.isRecording = false;
+                this.voiceButton = document.getElementById('voiceButton');
+                this.micIcon = document.getElementById('micIcon');
+                this.buttonText = document.getElementById('buttonText');
+                this.statusText = document.getElementById('statusText');
+                this.responseArea = document.getElementById('responseArea');
+                this.userSpeech = document.getElementById('userSpeech');
+                this.aiResponse = document.getElementById('aiResponse');
+                this.waves = document.querySelectorAll('.wave');
+                
+                this.init();
+            }
+
+            init() {
+                this.voiceButton.addEventListener('click', () => this.toggleRecording());
+                createParticles();
+            }
+
+            toggleRecording() {
+                if (!this.isRecording) {
+                    this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+
+            startRecording() {
+                this.isRecording = true;
+                this.voiceButton.classList.add('recording');
+                this.micIcon.textContent = '⏹️';
+                this.buttonText.textContent = 'Stop Recording';
+                
+                this.showStatus('Listening...');
+                this.startSoundWaves();
+                
+                // Simulate recording for demo
+                this.recordingTimeout = setTimeout(() => {
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    }
+                }, 5000); // Auto-stop after 5 seconds for demo
+            }
+
+            stopRecording() {
+                this.isRecording = false;
+                this.voiceButton.classList.remove('recording');
+                this.micIcon.textContent = '🎤';
+                this.buttonText.textContent = 'Tap to Speak';
+                
+                this.stopSoundWaves();
+                this.showStatus('Processing your voice<span class="loading-dots"><span></span><span></span><span></span></span>');
+                
+                if (this.recordingTimeout) {
+                    clearTimeout(this.recordingTimeout);
+                }
+                
+                // Simulate processing and response
+                setTimeout(() => {
+                    this.simulateResponse();
+                }, 2000);
+            }
+
+            startSoundWaves() {
+                this.waves.forEach((wave, index) => {
+                    setTimeout(() => {
+                        wave.classList.add('active');
+                    }, index * 300);
+                });
+            }
+
+            stopSoundWaves() {
+                this.waves.forEach(wave => {
+                    wave.classList.remove('active');
+                });
+            }
+
+            showStatus(text) {
+                this.statusText.innerHTML = text;
+                this.statusText.classList.add('show');
+            }
+
+            hideStatus() {
+                this.statusText.classList.remove('show');
+            }
+
+            simulateResponse() {
+                // Sample responses for demo
+                const sampleUserInputs = [
+                    "Xin chào, bạn có thể giúp tôi không?",
+                    "Thời tiết hôm nay như thế nào?",
+                    "Hãy kể cho tôi một câu chuyện vui",
+                    "Tôi cần lời khuyên về công việc",
+                    "Bạn có thể giải thích về AI không?"
+                ];
+
+                const sampleAIResponses = [
+                    "Xin chào! Tôi rất vui được giúp đỡ bạn. Bạn cần hỗ trợ gì hôm nay?",
+                    "Hôm nay thời tiết khá đẹp với nhiệt độ khoảng 25°C, trời nắng nhẹ. Rất thích hợp để đi dạo!",
+                    "Có một chú robot đi mua sắm, nhưng nó cứ mua toàn pin! Vì nó nghĩ đó là thức ăn của mình! 😄",
+                    "Hãy luôn theo đuổi đam mê của bạn, học hỏi không ngừng và đừng ngại thử thách bản thân với những cơ hội mới.",
+                    "AI là trí tuệ nhân tạo, giúp máy tính có thể học hỏi và đưa ra quyết định thông minh như con người."
+                ];
+
+                const randomIndex = Math.floor(Math.random() * sampleUserInputs.length);
+                const userInput = sampleUserInputs[randomIndex];
+                const aiResponseText = sampleAIResponses[randomIndex];
+
+                this.hideStatus();
+                
+                // Show user speech
+                this.userSpeech.textContent = `Bạn nói: "${userInput}"`;
+                this.aiResponse.textContent = '';
+                this.responseArea.classList.add('show');
+
+                // Show AI response with typing effect
+                setTimeout(() => {
+                    this.typeResponse(aiResponseText);
+                }, 1000);
+            }
+
+            typeResponse(text) {
+                let index = 0;
+                const typingSpeed = 50;
+                
+                const typeInterval = setInterval(() => {
+                    if (index < text.length) {
+                        this.aiResponse.textContent = `AI: "${text.substring(0, index + 1)}"`;
+                        index++;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, typingSpeed);
+            }
+        }
+
+        // Initialize the voice assistant
+        document.addEventListener('DOMContentLoaded', () => {
+            new VoiceAssistant();
+            
+            // Check login status
+            const username = localStorage.getItem("username");
+
+            if (!username) {
+                alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");
+                window.location.href = "/"; // quay về trang login
+                return; // dừng các thao tác tiếp theo
+            }
+
+            // Nếu đã login, hiển thị username
+            document.getElementById("usernameDisplay").textContent = username;
+        });
+
+        // Xử lý home button
+        document.getElementById("homeBtn").addEventListener("click", () => {
+            window.location.href = "/home";
+        });
+
+        // Xử lý logout
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("username");
+            window.location.href = "/";
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984bc835a46f050b',t:'MTc1ODgxNjUyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

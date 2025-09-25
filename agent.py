@@ -50,6 +50,10 @@ def index():
 def index_page():
     return render_template("index.html")
 
+# Trang voice
+@app.route('/voice')
+def voice_page():
+    return render_template("voice.html")
 
 
 # Trang bài học

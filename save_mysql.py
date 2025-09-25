@@ -90,9 +90,31 @@ def insert_new_user(username, email, password):
             cursor.close()
             connection.close()
             print("🔌 Đã đóng kết nối MySQL.")
+        
+# Hàm đăng nhập user
+def login_user(email, password):
+    connection = connect_to_mysql()
+    if connection is None:
+        return False
+
+    try:
+        cursor = connection.cursor()
+        sql = "SELECT * FROM users WHERE email = %s AND password = %s"
+        cursor.execute(sql, (email, password))
+        result = cursor.fetchone()
+        print("✅ Đăng nhập thành công!" if result else "❌ Đăng nhập thất bại!")
+        return result is not None
+    except Error as e:
+        print("❌ Lỗi khi kiểm tra user:", e)
+        return False
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
 
 # Test
 if __name__ == "__main__":
     create_database()   # 🔹 tạo DB nếu chưa có
     create_table()      # 🔹 tạo bảng nếu chưa có
-    insert_new_user("hoang", "hoang123@gmail.com", "123456")
+    # insert_new_user("hoang", "hoang123@gmail.com", "123456")
+    login_user("hoang123@gmail.com", "123456")

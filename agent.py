@@ -1,17 +1,19 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from prompt import BASE_ROLE_PROMPT, PROMPTS, CHATBOT_PROMPT
 from dotenv import load_dotenv
-from flask import Flask, send_file, jsonify, request
+from flask import Flask, render_template, send_file, jsonify, request
 from flask_cors import CORS
 import os
 import json
 from struc_lesson import *
 import re
+from save_mysql import *
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
 
 class EnglishTeachingAgent:
     def __init__(self, api_key: str, model: str = "gemini-2.0-flash"):
@@ -38,20 +40,27 @@ class EnglishTeachingAgent:
 API_KEY = os.getenv("GEMINI_API_KEY")
 agent = EnglishTeachingAgent(api_key=API_KEY)
 
-
+# Trang đăng nhập
 @app.route('/')
 def index():
-    return send_file('UI/index.html')
+    return render_template("login.html")
+
+# Trang chủ
+@app.route('/home')
+def index_page():
+    return render_template("index.html")
+
+
 
 # Trang bài học
 @app.route('/lesson')
 def lesson_page():
-    return send_file('UI/lesson.html')
+    return render_template("lesson.html")
 
 # Trang chatbot
 @app.route('/chatbot')
 def chatbot_page():
-    return send_file('UI/chatbot.html')
+    return render_template("chatbot.html")
 
 
 # API tạo bài học
@@ -168,6 +177,64 @@ def chat():
     }
 
     return jsonify(result)
+
+#/////////////////////////// CHẠY ĐĂNG NHẬP mysql /////////////////////////
+
+# Khởi tạo database và bảng khi server start
+create_database()
+create_table()
+
+# API đăng ký
+@app.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+
+    if not username or not email or not password:
+        return jsonify({"status": "error", "message": "Thiếu thông tin đăng ký!"}), 400
+
+    success = insert_new_user(username, email, password)
+    if success:
+        return jsonify({"status": "success", "message": "Đăng ký thành công!"}), 201
+    else:
+        return jsonify({"status": "error", "message": "Email đã tồn tại hoặc lỗi khi đăng ký!"}), 400
+
+# API đăng nhập
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"status": "error", "message": "Thiếu email hoặc mật khẩu!"}), 400
+
+    connection = connect_to_mysql()
+    if connection is None:
+        return jsonify({"status": "error", "message": "Lỗi kết nối CSDL"}), 500
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        sql = "SELECT * FROM users WHERE email = %s AND password = %s"
+        cursor.execute(sql, (email, password))
+        user = cursor.fetchone()
+
+        if user:
+            return jsonify({
+                "status": "success",
+                "message": "Đăng nhập thành công!",
+                "redirect": "/home",
+                "username": user["username"]   # 🔹 trả username
+            }), 200
+        else:
+            return jsonify({"status": "error", "message": "Sai email hoặc mật khẩu!"}), 401
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 
 
 if __name__ == "__main__":

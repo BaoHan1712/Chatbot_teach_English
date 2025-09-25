@@ -285,7 +285,8 @@
             <div class="slogan">Unlock Your English Potential with Your Personal AI Tutor</div>
             
             <!-- Thay SVG bằng ảnh -->
-        <img src="image\ai.gif" alt="AI Mascot" class="ai-mascot">
+        <img src="{{ url_for('static', filename='image/ai.gif') }}" alt="AI Mascot" class="ai-mascot">
+
         </div>
 
         <!-- Right Side -->
@@ -320,7 +321,7 @@
                     </form>
 
                     <div class="forgot-password">
-                        <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+                        <!-- <a href="#" onclick="showForgotPassword()">Forgot Password?</a> -->
                     </div>
                 </div>
 
@@ -385,21 +386,58 @@
             event.preventDefault();
             const email = event.target.querySelector('input[type="email"]').value;
             const password = event.target.querySelector('input[type="password"]').value;
-            
-            // Simulate login process
-            alert(`Đăng nhập thành công!\nEmail: ${email}\nChào mừng bạn quay lại với AI English Learning!`);
-        }
 
+            fetch("http://127.0.0.1:5000/login", {   // API Flask
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email: email, password: password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // ✅ Nếu login thành công thì chuyển đến /home
+                    localStorage.setItem("username", data.username);
+                    window.location.href = "/home";
+                } else {
+                    // ❌ Sai tài khoản hoặc lỗi
+                    alert(data.message || "Đăng nhập thất bại!");
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi:", err);
+                alert("Không kết nối được tới server!");
+            });
+        }
         function handleSignup(event) {
             event.preventDefault();
             const name = event.target.querySelector('input[type="text"]').value;
             const email = event.target.querySelector('input[type="email"]').value;
             const password = event.target.querySelector('input[type="password"]').value;
-            
-            // Simulate signup process
-            alert(`Đăng ký thành công!\nTên: ${name}\nEmail: ${email}\nChào mừng bạn đến với AI English Learning! Hãy bắt đầu hành trình học tiếng Anh cùng AI tutor của bạn!`);
-        }
 
+            fetch("http://127.0.0.1:5000/register", {   // API Flask
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username: name, email: email, password: password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert("Đăng ký thành công, hãy đăng nhập!");
+                    // Tự động chuyển sang tab login
+                    switchTab('login');
+                } else {
+                    alert(data.message || "Đăng ký thất bại!");
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi:", err);
+                alert("Không kết nối được tới server!");
+            });
+        }
 
 
         function showForgotPassword() {

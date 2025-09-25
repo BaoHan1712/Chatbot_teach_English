@@ -29,6 +29,11 @@
         }
         .order-word:hover {
             transform: scale(1.05);
+
+        .user-info { position: fixed; top: 1rem; right: 1rem; display: flex; align-items: center; gap: 0.5rem; z-index: 50; }
+        .logout-btn { background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.975rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: all 0.2s; }
+        .logout-btn:hover { background-color: #dc2626; }
+        .username-display { font-weight: 600; color: white; font-size: 0.975rem; }
         }
     </style>
 </head>
@@ -40,10 +45,39 @@
         <p class="text-gray-600">Học từ vựng và hội thoại về mọi chủ đề bạn thích</p>
 
         <!-- Nút quay về trang chủ -->
-        <a href="/" 
+        <a href="/home" 
     class="fixed top-4 left-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg font-medium transition-colors z-50">
     ⬅️ Trang chủ
 </a>
+
+    <!-- User Info + Logout (cố định góc trên phải) -->
+<div class="fixed top-4 right-4 flex items-center space-x-2 z-50">
+    <span class="text-black font-medium text-sm">👤 <span id="usernameDisplay">Khách</span></span>
+    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm shadow-md transition">Đăng xuất</button>
+</div>
+
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const username = localStorage.getItem("username");
+
+        if (!username) {
+            alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");
+            window.location.href = "/"; // quay về trang login
+            return; // dừng các thao tác tiếp theo
+        }
+
+        // Nếu đã login, hiển thị username
+        document.getElementById("usernameDisplay").textContent = username;
+    });
+
+    // Xử lý logout
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("username");
+            window.location.href = "/";
+    });
+</script>
+
+
     </div>
 
         <!-- Topic Input Section -->
@@ -370,6 +404,18 @@
                 console.error('Generate lesson error:', error);
             }
         }
+
+        // Hiển thị username từ localStorage
+        document.addEventListener("DOMContentLoaded", () => {
+            const username = localStorage.getItem("username") || "Khách";
+            document.getElementById("usernameDisplay").textContent = username;
+        });
+
+        // Xử lý logout
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("username");
+            window.location.href = "/";
+        });
 
         function loadSampleData() {
             lessonData = sampleData;

@@ -81,6 +81,3 @@ venv.bak/
 *.key
 *.crt
 
-# Custom (dành riêng cho dự án bạn)
-config.py
-save_mysql.py

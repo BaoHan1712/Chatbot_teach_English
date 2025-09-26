@@ -23,16 +23,34 @@ graph TD
 
     %% Core Application Components
     C --> C1[Chatbot Engine]
-    C --> C2[Voice Processing]
+    C --> C2[Voice Processing Pipeline]
     C --> C3[Lesson Management]
     C --> C4[User Management]
 
+    %% Voice Processing Sub-components
+    C2 --> C2a[Mic Input & Audio Capture]
+    C2 --> C2b[Noise Filtering & Preprocessing]
+    C2 --> C2c[Speech-to-Text (STT)]
+    C2 --> C2d[Text Sentiment/Intent Analysis]
+    C2 --> C2e[AI Engine Query]
+    C2 --> C2f[Text-to-Speech (TTS) Output]
+    C2a --> C2b
+    C2b --> C2c
+    C2c --> C2d
+    C2d --> C2e
+    C2e --> C2f
+    C2f --> A4
+
     %% Database Interactions
     D --> D1[(MySQL Database)]
+    C1 --> D1
+    C4 --> D1
+    C3 --> D1
 
     %% External Services
-    C1 --> E1[Google Gemini AI]
-    C2 --> E2[Text-to-Speech]
+    C1 --> E1[Google Gemini AI / LLM]
+    C2c --> E2[Google Speech-to-Text / Whisper]
+    C2f --> E3[Google Text-to-Speech / ElevenLabs / Coqui TTS]
 ```
 
 #### 1.2 Chi Tiết Các Layer và Luồng Xử Lý

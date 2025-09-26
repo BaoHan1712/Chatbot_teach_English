@@ -41,7 +41,7 @@ graph TD
     %% Data Flow Connections
     C1 --> |Data chat| D1
     C2 --> |Data voice| D1
-    C3 --> |Progress, Lesson| D1
+    C3 --> |Lesson| D1
     C4 --> |User Management| D1
     E1 --> |Responses| D1
 ```

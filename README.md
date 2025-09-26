@@ -6,9 +6,11 @@
 
 ## Kiến Trúc Hệ Thống
 
+### 1. Tổng Quan Kiến Trúc
+
 ```mermaid
 graph TD
-    A[User Interface] --> B[Authentication Layer]
+    A[User Interface Layer] --> B[Authentication Layer]
     B --> C[Core Application Layer]
     C --> D[Database Layer]
 
@@ -31,6 +33,147 @@ graph TD
     C1 --> E1[Google Gemini AI]
     C2 --> E2[Text-to-Speech]
 ```
+
+### 2. Chi Tiết Các Layer
+
+#### 2.1 User Interface Layer
+- **Web Interface**: Giao diện người dùng chính
+  - Trang chủ (`index.html`)
+  - Trang đăng nhập (`login.html`)
+  - Trang chatbot (`chatbot.html`)
+  - Trang bài học (`lesson.html`)
+  - Trang voice (`voice.html`)
+
+- **Admin Interface**: Giao diện quản trị
+  - Quản lý người dùng (`ad_user.html`)
+  - Quản lý bài học (`ad_lesson.html`)
+  - Quản lý truy vấn (`ad_query.html`)
+
+#### 2.2 Authentication Layer
+```mermaid
+sequenceDiagram
+    participant User
+    participant Auth Layer
+    participant Database
+
+    User->>Auth Layer: Đăng ký/Đăng nhập
+    Auth Layer->>Database: Kiểm tra thông tin
+    Database-->>Auth Layer: Kết quả xác thực
+    Auth Layer-->>User: Phản hồi (Success/Error)
+    
+    Note over Auth Layer: Kiểm tra vai trò (Role)
+    Alt Success
+        Auth Layer->>User: Chuyển hướng theo role
+    else Error
+        Auth Layer->>User: Thông báo lỗi
+    end
+```
+
+#### 2.3 Core Application Layer
+
+##### 2.3.1 Chatbot Engine Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant ChatEngine
+    participant GeminiAI
+    
+    User->>ChatEngine: Gửi câu hỏi
+    ChatEngine->>GeminiAI: Xử lý prompt
+    GeminiAI-->>ChatEngine: Phản hồi AI
+    ChatEngine-->>User: Kết quả định dạng
+    
+    Note over ChatEngine: Xử lý ngữ cảnh và<br/>tối ưu hóa phản hồi
+```
+
+##### 2.3.2 Voice Processing Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant VoiceEngine
+    participant TTS
+    
+    User->>VoiceEngine: Ghi âm giọng nói
+    VoiceEngine->>VoiceEngine: Xử lý âm thanh
+    VoiceEngine->>TTS: Chuyển text thành speech
+    TTS-->>User: Phát âm thanh
+```
+
+##### 2.3.3 Lesson Management Flow
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant LessonManager
+    participant Database
+    
+    Admin->>LessonManager: Tạo/Sửa bài học
+    LessonManager->>Database: Lưu nội dung
+    
+    Note over LessonManager: Quản lý cấu trúc<br/>và nội dung bài học
+    
+    User->>LessonManager: Truy cập bài học
+    LessonManager->>Database: Lấy nội dung
+    Database-->>User: Hiển thị bài học
+```
+
+##### 2.3.4 User Management Flow
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant UserManager
+    participant Database
+    
+    Admin->>UserManager: CRUD Operations
+    UserManager->>Database: Thực thi thay đổi
+    Database-->>Admin: Kết quả thao tác
+    
+    Note over UserManager: Quản lý quyền<br/>và thông tin người dùng
+```
+
+#### 2.4 Database Layer
+
+##### Cấu Trúc Database
+```sql
+-- Bảng Users
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('user','admin') DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Các bảng khác sẽ được thêm khi cần thiết
+```
+
+### 3. Luồng Xử Lý Chính
+
+#### 3.1 Luồng Đăng Nhập/Xác Thực
+1. User nhập thông tin đăng nhập
+2. Frontend gửi request đến `/login`
+3. Backend kiểm tra credentials trong database
+4. Trả về token và role nếu thành công
+5. Chuyển hướng user dựa trên role
+
+#### 3.2 Luồng Chat với AI
+1. User gửi câu hỏi qua giao diện chat
+2. Request được gửi đến endpoint `/chat`
+3. Backend xử lý với Google Gemini AI
+4. Format và trả về kết quả cho user
+
+#### 3.3 Luồng Xử Lý Voice
+1. User bắt đầu ghi âm (`/start_record`)
+2. Backend lưu file âm thanh
+3. Xử lý âm thanh thành text
+4. Chuyển text thành speech response
+5. Trả về file âm thanh cho user
+
+#### 3.4 Luồng Quản Lý Admin
+1. Admin truy cập các trang quản lý
+2. Thực hiện các thao tác CRUD
+3. Backend xử lý và cập nhật database
+4. Trả về kết quả và cập nhật UI
 
 ## Tính Năng
 

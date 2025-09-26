@@ -504,16 +504,10 @@
                 this.voiceButton.classList.add('recording');
                 this.micIcon.textContent = '⏹️';
                 this.buttonText.textContent = 'Stop Recording';
-                
                 this.showStatus('Listening...');
                 this.startSoundWaves();
-                
-                // Simulate recording for demo
-                this.recordingTimeout = setTimeout(() => {
-                    if (this.isRecording) {
-                        this.stopRecording();
-                    }
-                }, 5000); // Auto-stop after 5 seconds for demo
+
+                fetch("/start_record", { method: "POST" });
             }
 
             stopRecording() {
@@ -521,19 +515,22 @@
                 this.voiceButton.classList.remove('recording');
                 this.micIcon.textContent = '🎤';
                 this.buttonText.textContent = 'Tap to Speak';
-                
                 this.stopSoundWaves();
-                this.showStatus('Processing your voice<span class="loading-dots"><span></span><span></span><span></span></span>');
-                
-                if (this.recordingTimeout) {
-                    clearTimeout(this.recordingTimeout);
-                }
-                
-                // Simulate processing and response
-                setTimeout(() => {
-                    this.simulateResponse();
-                }, 2000);
-            }
+                this.showStatus('Processing...');
+
+                fetch("/stop_record", { method: "POST" })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "ok") {
+                            this.userSpeech.textContent = `Bạn nói: "${data.user_text}"`;
+                            this.aiResponse.textContent = `AI: "${data.bot_reply}"`;
+                            this.responseArea.classList.add("show");
+                            this.hideStatus();
+                        } else {
+                            this.showStatus("❌ " + data.message);
+                        }
+                    });
+            }            
 
             startSoundWaves() {
                 this.waves.forEach((wave, index) => {
@@ -614,15 +611,17 @@
             
             // Check login status
             const username = localStorage.getItem("username");
+            const role = localStorage.getItem("role");
 
-            if (!username) {
-                alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");
-                window.location.href = "/"; // quay về trang login
-                return; // dừng các thao tác tiếp theo
-            }
+            // if (!username) {
+            //     alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");
+            //     window.location.href = "/"; // quay về trang login
+            //     return; // dừng các thao tác tiếp theo
+            // }
 
-            // Nếu đã login, hiển thị username
+            // Nếu đã login, hiển thị username và role
             document.getElementById("usernameDisplay").textContent = username;
+            document.getElementById("roleDisplay").textContent = role;
         });
 
         // Xử lý home button
@@ -633,6 +632,7 @@
         // Xử lý logout
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("username");
+            localStorage.setItem("role", data.role);
             window.location.href = "/";
         });
     </script>

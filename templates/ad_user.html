@@ -106,6 +106,20 @@
         .add-user-btn:hover {
             background: #218838;
         }
+        .view-all-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .view-all-btn:hover {
+            background: #138496;
+        }
         .user-table {
             width: 100%;
             border-collapse: collapse;
@@ -332,6 +346,7 @@
                 <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm theo tên, email...">
             </div>
             <button class="add-user-btn" onclick="openAddUserModal()">➕ Thêm Người Dùng</button>
+            <button class="view-all-btn" onclick="loadAllUsers()">👥 Xem Tất Cả Users</button>
         </div>
 
         <table class="user-table" id="userTable">
@@ -384,110 +399,180 @@
         </div>
     </div>
 
-    <script>
-        let users = [
-            { id: 1, name: "Nguyễn Văn A", email: "admin@example.com", password: "admin123", role: "admin" },
-            { id: 2, name: "Trần Thị B", email: "user1@example.com", password: "user123", role: "user" },
-            { id: 3, name: "Lê Văn C", email: "user2@example.com", password: "user456", role: "user" }
-        ];
-        let currentEditId = null;
+<script>
+    let users = [];
+    let currentEditId = null;
 
-        function renderUsers(userList = users) {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-            userList.forEach(user => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.id}</td>
-                    <td>${user.name}</td>
-                    <td>${user.email}</td>
-                    <td>${user.password}</td>
-                    <td><span class="role-badge role-${user.role}">${user.role === 'admin' ? 'Admin' : 'User'}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-edit" onclick="editUser(${user.id})">✏️ Sửa</button>
-                            <button class="btn btn-delete" onclick="deleteUser(${user.id})">🗑️ Xóa</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+    // ====== Load toàn bộ users ======
+    async function loadAllUsers() {
+        try {
+            const response = await fetch('/get_all/users');
+            if (!response.ok) throw new Error('Failed to load users');
+            users = await response.json();
+            renderUsers(users);
+        } catch (error) {
+            alert('Không thể tải danh sách người dùng: ' + error.message);
+        }
+    }
+
+    // ====== Render danh sách users ======
+    function renderUsers(userList = users) {
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = '';
+
+        if (!userList || userList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Không có dữ liệu người dùng</td></tr>`;
+            return;
         }
 
-        function openAddUserModal() {
-            currentEditId = null;
-            document.getElementById('modalTitle').textContent = 'Thêm Người Dùng';
-            document.getElementById('userForm').reset();
-            document.getElementById('userModal').style.display = 'block';
+        userList.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${user.id}</td>
+                <td>${user.username || ''}</td>
+                <td>${user.email || ''}</td>
+                <td>${user.password || ''}</td>
+                <td><span class="role-badge role-${user.role || 'user'}">${user.role || 'user'}</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-edit" onclick="editUser(${user.id})">✏️ Sửa</button>
+                        <button class="btn btn-delete" onclick="deleteUser(${user.id})">🗑️ Xóa</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // ====== Thêm hoặc cập nhật user ======
+    async function saveUser() {
+        const username = document.getElementById('userName').value;
+        const email = document.getElementById('userEmail').value;
+        const password = document.getElementById('userPassword').value;
+        const role = document.getElementById('userRole').value;
+
+        if (!username || !email || !password) {
+            alert('Vui lòng điền đầy đủ thông tin!');
+            return;
         }
 
-        function editUser(id) {
-            const user = users.find(u => u.id === id);
-            if (!user) return;
-            currentEditId = id;
-            document.getElementById('modalTitle').textContent = 'Sửa Người Dùng';
-            document.getElementById('userName').value = user.name;
-            document.getElementById('userEmail').value = user.email;
-            document.getElementById('userPassword').value = user.password;
-            document.getElementById('userRole').value = user.role;
-            document.getElementById('userModal').style.display = 'block';
-        }
-
-        function saveUser() {
-            const name = document.getElementById('userName').value;
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const role = document.getElementById('userRole').value;
-
-            const existingUser = users.find(u => u.email === email && u.id !== currentEditId);
-            if (existingUser) return alert('❌ Email này đã tồn tại!');
-
+        try {
+            let response;
             if (currentEditId) {
-                const userIndex = users.findIndex(u => u.id === currentEditId);
-                users[userIndex] = {...users[userIndex], name, email, password, role};
-            } else {
-                const newId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 1;
-                users.push({ id: newId, name, email, password, role });
-            }
-            closeModal();
-            renderUsers();
-        }
-
-        function deleteUser(id) {
-            if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return;
-            users = users.filter(u => u.id !== id);
-            renderUsers();
-        }
-
-        function closeModal() {
-            document.getElementById('userModal').style.display = 'none';
-            currentEditId = null;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            renderUsers();
-            document.getElementById('searchInput').addEventListener('input', function() {
-                const term = this.value.toLowerCase();
-                renderUsers(users.filter(u => u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)));
-            });
-            document.getElementById('userForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveUser();
-            });
-
-            // Navigation links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function() {
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                    window.location.href = this.getAttribute('href'); // Chuyển trang
+                // Update user
+                response = await fetch('/update_user', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: currentEditId,
+                        username,
+                        email,
+                        password,
+                        role
+                    })
                 });
-            });
+            } else {
+                // Add new user
+                response = await fetch('/add/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password,
+                        role
+                    })
+                });
+            }
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message);
+
+            closeModal();
+            await loadAllUsers();
+            alert(result.message);
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+
+    // ====== Xóa user ======
+    async function deleteUser(id) {
+        if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return;
+
+        try {
+            const response = await fetch(`/delete_user/${id}`, { method: 'DELETE' });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message);
+
+            await loadAllUsers();
+            alert(result.message);
+        } catch (error) {
+            alert('Lỗi: ' + error.message);
+        }
+    }
+
+    // ====== Mở modal thêm user ======
+    function openAddUserModal() {
+        currentEditId = null;
+        document.getElementById('modalTitle').textContent = 'Thêm Người Dùng';
+        document.getElementById('userForm').reset();
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // ====== Edit user ======
+    function editUser(id) {
+        const user = users.find(u => u.id === id);
+        if (!user) return alert('Không tìm thấy thông tin người dùng!');
+
+        currentEditId = id;
+        document.getElementById('modalTitle').textContent = 'Sửa Người Dùng';
+        document.getElementById('userName').value = user.username;
+        document.getElementById('userEmail').value = user.email;
+        document.getElementById('userPassword').value = user.password;
+        document.getElementById('userRole').value = user.role;
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // ====== Đóng modal ======
+    function closeModal() {
+        document.getElementById('userModal').style.display = 'none';
+        currentEditId = null;
+    }
+
+    // ====== Event khi load trang ======
+    document.addEventListener('DOMContentLoaded', function () {
+        loadAllUsers();
+
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            const filteredUsers = users.filter(user =>
+                user.username.toLowerCase().includes(term) ||
+                user.email.toLowerCase().includes(term)
+            );
+            renderUsers(filteredUsers);
         });
 
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('userModal')) closeModal();
-        }
-    </script>
+        document.getElementById('userForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveUser();
+        });
+
+        // Navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function () {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                window.location.href = this.getAttribute('href');
+            });
+        });
+    });
+
+    // Đóng modal khi click ra ngoài
+    window.onclick = function (event) {
+        if (event.target === document.getElementById('userModal')) closeModal();
+    }
+</script>
+
 </body>
 </html>

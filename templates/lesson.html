@@ -59,6 +59,7 @@
 <script>
         document.addEventListener("DOMContentLoaded", () => {
         const username = localStorage.getItem("username");
+        const role = localStorage.getItem("role") || "Người dùng";
 
         if (!username) {
             alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");
@@ -73,6 +74,7 @@
     // Xử lý logout
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("username");
+            localStorage.removeItem("role");
             window.location.href = "/";
     });
 </script>
@@ -408,12 +410,14 @@
         // Hiển thị username từ localStorage
         document.addEventListener("DOMContentLoaded", () => {
             const username = localStorage.getItem("username") || "Khách";
+            const role = localStorage.getItem("role") || "Người dùng";
             document.getElementById("usernameDisplay").textContent = username;
         });
 
         // Xử lý logout
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("username");
+            localStorage.removeItem("role");
             window.location.href = "/";
         });
 

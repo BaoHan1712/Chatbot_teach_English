@@ -109,6 +109,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
         const username = localStorage.getItem("username");
+        const role = localStorage.getItem("role") || "Người dùng";
 
         if (!username) {
             alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");

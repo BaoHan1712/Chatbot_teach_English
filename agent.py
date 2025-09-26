@@ -1,5 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from prompt import BASE_ROLE_PROMPT, PROMPTS, CHATBOT_PROMPT
+from prompt import BASE_ROLE_PROMPT, PROMPTS, CHATBOT_PROMPT, VOICE_PROMPT
 from dotenv import load_dotenv
 from flask import Flask, render_template, send_file, jsonify, request
 from flask_cors import CORS
@@ -8,6 +8,12 @@ import json
 from struc_lesson import *
 import re
 from save_mysql import *
+import speech_recognition as sr
+from gtts import gTTS
+import sounddevice as sd
+import scipy.io.wavfile as wav
+import pygame
+from config_py import startup
 
 load_dotenv()
 
@@ -200,10 +206,6 @@ def chat():
 
 #/////////////////////////// CHẠY ĐĂNG NHẬP mysql /////////////////////////
 
-# Khởi tạo database và bảng khi server start
-create_database()
-create_table()
-
 # API đăng ký
 @app.route("/register", methods=["POST"])
 def register():
@@ -211,6 +213,7 @@ def register():
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
+   
 
     if not username or not email or not password:
         return jsonify({"status": "error", "message": "Thiếu thông tin đăng ký!"}), 400
@@ -246,7 +249,8 @@ def login():
                 "status": "success",
                 "message": "Đăng nhập thành công!",
                 "redirect": "/home",
-                "username": user["username"]   # 🔹 trả username
+                "username": user["username"],  # 🔹 trả username
+                "role": user["role"]           # 🔹 trả role
             }), 200
         else:
             return jsonify({"status": "error", "message": "Sai email hoặc mật khẩu!"}), 401
@@ -255,7 +259,136 @@ def login():
             cursor.close()
             connection.close()
 
+#/////////////////////// Quyền ADMIN //////////////////////////////////
+@app.route("/update_user", methods=["PUT"])
+def api_update_user():
+    """Cập nhật thông tin user"""
+    data = request.get_json()
+    user_id = data.get("id")
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    role = data.get("role")
 
+    if not all([user_id, username, email, password, role]):
+        return jsonify({"status": "error", "message": "Thiếu dữ liệu!"}), 400
+
+    success = update_user(user_id, username, email, password, role)
+    if success:
+        return jsonify({"status": "success", "message": f"User {user_id} đã cập nhật thành công!"})
+    else:
+        return jsonify({"status": "error", "message": f"Không thể cập nhật user {user_id}!"}), 500
+
+
+# ====== API delete user ======
+@app.route("/delete_user/<int:user_id>", methods=["DELETE"])
+def api_delete_user(user_id):
+    success = delete_user(user_id)
+    if success:
+        print(f"🗑️ User {user_id} đã bị xóa!")
+        return jsonify({"status": "success", "message": f"User {user_id} đã bị xóa!"})
+    else:
+        print(f"❌ Không tìm thấy user {user_id}!")
+        return jsonify({"status": "error", "message": f"Không tìm thấy user {user_id}!"}), 404
+
+# ====== API get all users ======
+@app.route("/get_all/users", methods=["GET"])
+def api_get_users():
+    users = show_all_users()
+    return jsonify(users), 200
+
+# ====== API add new user (admin) ======
+@app.route("/add/users", methods=["POST"])
+def api_add_user():
+    data = request.get_json()
+    username = data.get("username")   # 🔹 sửa "name" -> "username"
+    email = data.get("email")
+    password = data.get("password")
+    role = data.get("role", "user")
+
+    success, msg = admin_insert_user(username, email, password, role)
+    status = "success" if success else "error"
+    print(f"➕ Thêm user: {msg}🤡")
+    return jsonify({"status": status, "message": msg}), (200 if success else 400)
+
+
+#////////////////////////// AI voice //////////////////////////////////
+
+# Biến trạng thái ghi âm
+is_recording = False
+recording = None
+fs = 16000
+filename = "input.wav"
+
+# ====== 2. Text-to-Speech ======
+def speak(text):
+    try:
+        out_file = "reply.mp3"
+        tts = gTTS(text=text, lang="en", lang_check=True)
+        tts.save(out_file)
+        pygame.mixer.init()
+        pygame.mixer.music.load(out_file)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+
+        return out_file
+    except Exception as e:
+        print("❌ Lỗi TTS:", e)
+        return None
+
+
+# ====== 3. API start/stop record ======
+@app.route("/start_record", methods=["POST"])
+def start_record():
+    global is_recording, recording
+    if is_recording:
+        return jsonify({"status": "error", "message": "Đang ghi âm rồi!"}), 400
+
+    print("🎤 Bắt đầu ghi âm...")
+    recording = sd.rec(int(10 * fs), samplerate=fs, channels=1, dtype="int16")  
+    is_recording = True
+    return jsonify({"status": "ok", "message": "Bắt đầu ghi âm"})
+
+@app.route("/stop_record", methods=["POST"])
+def stop_record():
+    global is_recording, recording
+    if not is_recording:
+        return jsonify({"status": "error", "message": "Chưa có ghi âm nào đang chạy!"}), 400
+
+    sd.stop()
+    wav.write(filename, fs, recording)
+    is_recording = False
+    print("🛑 Dừng ghi âm, lưu vào", filename)
+
+    # Nhận diện giọng nói
+    r = sr.Recognizer()
+    with sr.AudioFile(filename) as source:
+        audio = r.record(source)
+
+    try:
+        user_text = r.recognize_google(audio, language="en-US")
+        print("🗣️ Bạn nói:", user_text)
+    except sr.UnknownValueError:
+        return jsonify({"status": "error", "message": "Không nhận diện được giọng nói"}), 400
+    except sr.RequestError as e:
+        return jsonify({"status": "error", "message": f"Lỗi Google SR: {e}"}), 500
+
+
+    voice_prompt = VOICE_PROMPT.replace("{student_input}", user_text)
+    response = agent.llm.invoke(voice_prompt)
+    bot_reply = response.content 
+    print("🤖 Bot:", bot_reply)
+
+    # Bot nói lại
+    speak(bot_reply)
+
+    return jsonify({
+        "status": "ok",
+        "user_text": user_text,
+        "bot_reply": bot_reply
+    })
 
 if __name__ == "__main__":
+    startup()
     app.run(debug=True, port=5000)

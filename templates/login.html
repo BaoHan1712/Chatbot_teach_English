@@ -399,6 +399,8 @@
                 if (data.status === "success") {
                     // ✅ Nếu login thành công thì chuyển đến /home
                     localStorage.setItem("username", data.username);
+                    localStorage.setItem("role", data.role);
+                    // alert("Đăng nhập thành công! Chào " + data.username + " (" + data.role + ")");
                     window.location.href = "/home";
                 } else {
                     // ❌ Sai tài khoản hoặc lỗi

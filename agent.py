@@ -61,7 +61,6 @@ def index_page():
 def voice_page():
     return render_template("voice.html")
 
-
 # Trang bài học
 @app.route('/lesson')
 def lesson_page():
@@ -311,7 +310,44 @@ def api_add_user():
     print(f"➕ Thêm user: {msg}🤡")
     return jsonify({"status": status, "message": msg}), (200 if success else 400)
 
+# API nhận query
+@app.route("/run_query", methods=["POST"])
+def run_query():
+    data = request.get_json()
+    sql_query = data.get("query", "").strip()
 
+    if not sql_query:
+        return jsonify({"status": "error", "result": "❌ Vui lòng nhập lệnh SQL!"}), 400
+
+    connection = connect_to_mysql()
+    if connection is None:
+        return jsonify({"status": "error", "result": "❌ Không kết nối được MySQL!"}), 500
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(sql_query)
+
+        if sql_query.lower().startswith("select"):
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            result = [dict(zip(columns, row)) for row in rows]
+        else:
+            connection.commit()
+            result = f"✅ Query thành công! {cursor.rowcount} hàng bị ảnh hưởng."
+
+        return jsonify({"status": "success", "result": result})
+    except Error as e:
+        return jsonify({"status": "error", "result": f"❌ Lỗi khi thực hiện query: {e}"})
+    finally:
+        cursor.close()
+        connection.close()
+    
+
+@app.route("/show_all", methods=["GET"])
+def api_show_all():
+    """API trả về toàn bộ dữ liệu database dưới dạng JSON"""
+    data = get_all_tables_data()
+    return jsonify({"status": "success", "result": data})
 #////////////////////////// AI voice //////////////////////////////////
 
 # Biến trạng thái ghi âm
@@ -389,6 +425,7 @@ def stop_record():
         "bot_reply": bot_reply
     })
 
+#///////////////////////////////////////////////////////////////////////////////
 if __name__ == "__main__":
     startup()
     app.run(debug=True, port=5000)

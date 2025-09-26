@@ -190,7 +190,7 @@ def delete_user(user_id):
         return False
 
 
-# Hàm xem toàn bộ dữ liệu trong bảng users
+# Hàm xem toàn bộ người dùng trong bảng users
 def show_all_users():
     """Lấy tất cả user trong bảng users."""
     connection = connect_to_mysql()
@@ -208,6 +208,42 @@ def show_all_users():
         print("❌ Lỗi khi truy vấn dữ liệu:", e)
         return None
 
+# Hàm lấy toàn bộ dữ liệu tất cả bảng trong database
+def get_all_tables_data():
+    """Lấy toàn bộ dữ liệu tất cả bảng trong database."""
+    try:
+        connection = mysql.connector.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASS,
+            database=DB_NAME
+        )
+        if connection.is_connected():
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SHOW TABLES")
+            tables = cursor.fetchall()
+            all_data = []
+
+            for table in tables:
+                # key tên cột của dict trả về tùy driver, nên lấy value đầu tiên
+                table_name = list(table.values())[0] if isinstance(table, dict) else table[0]
+                cursor.execute(f"SELECT * FROM {table_name}")
+                rows = cursor.fetchall()
+                all_data.append({
+                    "table": table_name,
+                    "columns": list(rows[0].keys()) if rows else [],
+                    "rows": rows
+                })
+            print(f"✅ Lấy dữ liệu từ {len(tables)} bảng thành công.")
+            return all_data
+    except Error as e:
+        print(f"Lỗi: {e}")
+        return []
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
 
 
 # # Test

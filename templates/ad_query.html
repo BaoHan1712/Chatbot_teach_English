@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Query</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: #343a40;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-link {
+            color: #adb5bd;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+        .nav-link.active {
+            color: white;
+            background: #007bff;
+        }
+
+        /* Header */
+        .header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            color: #495057;
+            font-size: 2rem;
+        }
+
+        /* Query Container */
+        .query-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .query-container input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .query-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .query-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            min-height: 50px;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:nth-child(even) {background-color: #f2f2f2;}
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .query-container {
+                margin: 20px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span>🏠</span>
+            <span>Admin Panel</span>
+        </div>
+        <div class="nav-links">
+            <a href="/ad_user" class="nav-link">👥 Users</a>
+            <a href="/ad_lesson" class="nav-link">📚 Lessons</a>
+            <a href="/ad_query" class="nav-link active">🔍 Query</a>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>🔧 Query Interface</h1>
+    </div>
+
+    <div class="query-container">
+        <input type="text" id="queryInput" placeholder="Nhập lệnh ở đây...">
+        <button onclick="sendQuery()">Gửi</button>
+        <button onclick="showAllDatabase()">Show All Database</button>
+        <div class="result" id="result">Kết quả sẽ hiển thị ở đây</div>
+    </div>
+
+    <script>
+        async function sendQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            if (!query) {
+                resultDiv.innerHTML = "❌ Vui lòng nhập lệnh!";
+                return;
+            }
+
+            try {
+                const response = await fetch("/run_query", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                resultDiv.textContent = "❌ Lỗi: " + error.message;
+            }
+
+            document.getElementById('queryInput').value = "";
+        }
+
+        async function showAllDatabase() {
+            const resultDiv = document.getElementById('result');
+            try {
+                const response = await fetch("/show_all");
+                const data = await response.json();
+                if (data.status === "success") {
+                    if (data.result.length === 0) {
+                        resultDiv.textContent = "❌ Database trống!";
+                        return;
+                    }
+                    let html = "";
+                    data.result.forEach(tableData => {
+                        html += `<h3>Bảng: ${tableData.table}</h3>`;
+                        if (tableData.rows.length === 0) {
+                            html += "<p>Không có dữ liệu</p>";
+                        } else {
+                            html += "<table>";
+                            html += "<thead><tr>";
+                            tableData.columns.forEach(col => html += `<th>${col}</th>`);
+                            html += "</tr></thead><tbody>";
+                            tableData.rows.forEach(row => {
+                                html += "<tr>";
+                                tableData.columns.forEach(col => html += `<td>${row[col]}</td>`);
+                                html += "</tr>";
+                            });
+                            html += "</tbody></table>";
+                        }
+                    });
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.textContent = "❌ Lỗi khi lấy dữ liệu";
+                }
+            } catch (error) {
+                resultDiv.textContent = "❌ Lỗi: " + error.message;
+            }
+        }
+
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            if (data.status === "success") {
+                if (typeof data.result === "string") {
+                    resultDiv.textContent = data.result;
+                } else if (Array.isArray(data.result) && data.result.length > 0) {
+                    const columns = Object.keys(data.result[0]);
+                    let table = "<table><thead><tr>";
+                    columns.forEach(col => table += `<th>${col}</th>`);
+                    table += "</tr></thead><tbody>";
+                    data.result.forEach(row => {
+                        table += "<tr>";
+                        columns.forEach(col => table += `<td>${row[col]}</td>`);
+                        table += "</tr>";
+                    });
+                    table += "</tbody></table>";
+                    resultDiv.innerHTML = table;
+                } else {
+                    resultDiv.textContent = "❌ Không có kết quả nào.";
+                }
+            } else {
+                resultDiv.textContent = data.result;
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -11,29 +11,53 @@
 #### 1.1 Sơ Đồ Tổng Thể
 ```mermaid
 graph TD
-    A[User Interface Layer] --> B[Authentication Layer]
-    B --> C[Core Application Layer]
-    C --> D[Database Layer]
+    %% Main Layers
+    A[User Interface Layer]
+    B[Authentication Layer]
+    C[Core Application Layer]
+    D[Database Layer]
+    
+    A --> B
+    B --> C
+    C --> D
 
     %% User Interface Components
-    A1[Web Interface] --> A
-    A2[Admin Interface] --> A
-    A3[Chat Interface] --> A
-    A4[Voice Interface] --> A
+    A1[Web Interface]
+    A2[Admin Interface]
+    A3[Chat Interface]
+    A4[Voice Interface]
+    
+    A1 --> A
+    A2 --> A
+    A3 --> A
+    A4 --> A
 
     %% Core Application Components
-    C --> C1[Chatbot Engine]
-    C --> C2[Voice Processing Pipeline]
-    C --> C3[Lesson Management]
-    C --> C4[User Management]
+    C1[Chatbot Engine]
+    C2[Voice Processing Pipeline]
+    C3[Lesson Management]
+    C4[User Management]
+    
+    C --> C1
+    C --> C2
+    C --> C3
+    C --> C4
 
     %% Voice Processing Sub-components
-    C2 --> C2a[Mic Input & Audio Capture]
-    C2 --> C2b[Noise Filtering & Preprocessing]
-    C2 --> C2c[Speech-to-Text (STT)]
-    C2 --> C2d[Text Sentiment/Intent Analysis]
-    C2 --> C2e[AI Engine Query]
-    C2 --> C2f[Text-to-Speech (TTS) Output]
+    C2a[Audio Input]
+    C2b[Noise Filter]
+    C2c[Speech-to-Text]
+    C2d[Intent Analysis]
+    C2e[AI Processing]
+    C2f[TTS Output]
+    
+    C2 --> C2a
+    C2 --> C2b
+    C2 --> C2c
+    C2 --> C2d
+    C2 --> C2e
+    C2 --> C2f
+    
     C2a --> C2b
     C2b --> C2c
     C2c --> C2d
@@ -41,16 +65,23 @@ graph TD
     C2e --> C2f
     C2f --> A4
 
-    %% Database Interactions
-    D --> D1[(MySQL Database)]
+    %% Database Layer
+    D1[(MySQL DB)]
+    D --> D1
+    
+    %% Database Connections
     C1 --> D1
-    C4 --> D1
     C3 --> D1
+    C4 --> D1
 
     %% External Services
-    C1 --> E1[Google Gemini AI / LLM]
-    C2c --> E2[Google Speech-to-Text / Whisper]
-    C2f --> E3[Google Text-to-Speech / ElevenLabs / Coqui TTS]
+    E1[Gemini AI]
+    E2[Speech API]
+    E3[TTS API]
+    
+    C1 --> E1
+    C2c --> E2
+    C2f --> E3
 ```
 
 #### 1.2 Chi Tiết Các Layer và Luồng Xử Lý

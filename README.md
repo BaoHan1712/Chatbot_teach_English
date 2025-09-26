@@ -35,7 +35,7 @@ graph TD
     C4 --> D1
 
     %% External Services
-    C1 --> E1[Google Gemini AI]
+    C1 --> E1[Model AI]
     C2 --> E2[Text-to-Speech]
 
     %% Data Flow Connections
@@ -43,6 +43,7 @@ graph TD
     C2 --> |Save data voice| D1
     C3 --> |Save learning progress, lesson level| D1
     C4 --> |User Management| D1
+    E1[Model AI] --> |responses| D1
 ```
 
 #### 1.2 Chi Tiết Các Layer và Luồng Xử Lý

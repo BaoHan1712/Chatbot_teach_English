@@ -8,6 +8,7 @@
 
 ### 1. Tổng Quan Kiến Trúc
 
+#### 1.1 Sơ Đồ Tổng Thể
 ```mermaid
 graph TD
     A[User Interface Layer] --> B[Authentication Layer]
@@ -32,6 +33,124 @@ graph TD
     %% External Services
     C1 --> E1[Google Gemini AI]
     C2 --> E2[Text-to-Speech]
+```
+
+#### 1.2 Chi Tiết Các Layer và Luồng Xử Lý
+
+##### A. User Interface Layer
+1. **Web Interface (A1)**
+   - Xử lý tương tác người dùng thông qua các trang web
+   - Gửi/nhận requests đến Authentication Layer
+   - Hiển thị kết quả và phản hồi từ hệ thống
+   - Các trang chính: index, login, chatbot, lesson, voice
+
+2. **Admin Interface (A2)**
+   - Giao diện quản trị viên
+   - Quản lý users, lessons, và truy vấn database
+   - Dashboard theo dõi hoạt động hệ thống
+   - Các trang: ad_user, ad_lesson, ad_query
+
+3. **Chat Interface (A3)**
+   - Giao diện chat với AI
+   - Xử lý tin nhắn real-time
+   - Hiển thị lịch sử chat
+   - Tích hợp với Chatbot Engine
+
+4. **Voice Interface (A4)**
+   - Ghi âm và phát âm thanh
+   - Xử lý tương tác voice
+   - Kết nối với Voice Processing Engine
+
+##### B. Authentication Layer
+1. **Xử lý Đăng Nhập/Đăng Ký**
+   ```mermaid
+   sequenceDiagram
+       User->>Auth: Gửi thông tin đăng nhập
+       Auth->>Database: Kiểm tra credentials
+       Database-->>Auth: Xác thực thông tin
+       Auth-->>User: JWT Token + Role
+   ```
+
+2. **Quản Lý Phiên và Phân Quyền**
+   - Tạo và quản lý JWT tokens
+   - Phân quyền dựa trên role (admin/user)
+   - Bảo mật các routes và API endpoints
+
+##### C. Core Application Layer
+1. **Chatbot Engine (C1)**
+   - Xử lý ngôn ngữ tự nhiên
+   - Tích hợp với Google Gemini AI
+   - Quản lý context và flow hội thoại
+   - Tối ưu hóa prompt và phản hồi
+
+2. **Voice Processing (C2)**
+   - Chuyển đổi text-to-speech và ngược lại
+   - Xử lý file âm thanh
+   - Tích hợp với gTTS service
+   - Buffer và stream xử lý
+
+3. **Lesson Management (C3)**
+   - CRUD operations cho bài học
+   - Quản lý cấu trúc và nội dung
+   - Theo dõi tiến độ học tập
+   - Phân tích hiệu quả bài học
+
+4. **User Management (C4)**
+   - Quản lý thông tin người dùng
+   - Phân quyền và roles
+   - Theo dõi hoạt động
+   - Báo cáo và thống kê
+
+##### D. Database Layer
+1. **Cấu Trúc Database**
+   ```sql
+   -- User Management
+   CREATE TABLE users (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       username VARCHAR(100) NOT NULL,
+       email VARCHAR(100) NOT NULL UNIQUE,
+       password VARCHAR(255) NOT NULL,
+       role ENUM('user','admin') DEFAULT 'user',
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+
+   -- Sẽ bổ sung thêm các bảng khác cho lessons, chat history, etc.
+   ```
+
+2. **Tương Tác Database**
+   - Connection pooling và quản lý kết nối
+   - Transaction management
+   - Query optimization
+   - Data backup và recovery
+
+#### 1.3 Luồng Xử Lý Chính
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI Layer
+    participant Auth Layer
+    participant Core Layer
+    participant DB Layer
+    participant External Services
+
+    User->>UI Layer: Tương tác (Click/Input)
+    UI Layer->>Auth Layer: Kiểm tra xác thực
+    Auth Layer->>DB Layer: Verify token/session
+    DB Layer-->>Auth Layer: Kết quả xác thực
+    
+    Alt Xác thực thành công
+        Auth Layer->>Core Layer: Forward request
+        Core Layer->>External Services: Gọi service (nếu cần)
+        External Services-->>Core Layer: Kết quả
+        Core Layer->>DB Layer: Lưu/Đọc dữ liệu
+        DB Layer-->>Core Layer: Dữ liệu
+        Core Layer-->>UI Layer: Kết quả xử lý
+        UI Layer-->>User: Hiển thị kết quả
+    else Xác thực thất bại
+        Auth Layer-->>UI Layer: Error message
+        UI Layer-->>User: Thông báo lỗi
+    end
 ```
 
 ### 2. Chi Tiết Các Layer

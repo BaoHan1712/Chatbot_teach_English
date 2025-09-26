@@ -11,77 +11,28 @@
 #### 1.1 Sơ Đồ Tổng Thể
 ```mermaid
 graph TD
-    %% Main Layers
-    A[User Interface Layer]
-    B[Authentication Layer]
-    C[Core Application Layer]
-    D[Database Layer]
-    
-    A --> B
-    B --> C
-    C --> D
+    A[User Interface Layer] --> B[Authentication Layer]
+    B --> C[Core Application Layer]
+    C --> D[Database Layer]
 
     %% User Interface Components
-    A1[Web Interface]
-    A2[Admin Interface]
-    A3[Chat Interface]
-    A4[Voice Interface]
-    
-    A1 --> A
-    A2 --> A
-    A3 --> A
-    A4 --> A
+    A1[Web Interface] --> A
+    A2[Admin Interface] --> A
+    A3[Chat Interface] --> A
+    A4[Voice Interface] --> A
 
     %% Core Application Components
-    C1[Chatbot Engine]
-    C2[Voice Processing Pipeline]
-    C3[Lesson Management]
-    C4[User Management]
-    
-    C --> C1
-    C --> C2
-    C --> C3
-    C --> C4
+    C --> C1[Chatbot Engine]
+    C --> C2[Voice Processing]
+    C --> C3[Lesson Management]
+    C --> C4[User Management]
 
-    %% Voice Processing Sub-components
-    C2a[Audio Input]
-    C2b[Noise Filter]
-    C2c[Speech-to-Text]
-    C2d[Intent Analysis]
-    C2e[AI Processing]
-    C2f[TTS Output]
-    
-    C2 --> C2a
-    C2 --> C2b
-    C2 --> C2c
-    C2 --> C2d
-    C2 --> C2e
-    C2 --> C2f
-    
-    C2a --> C2b
-    C2b --> C2c
-    C2c --> C2d
-    C2d --> C2e
-    C2e --> C2f
-    C2f --> A4
-
-    %% Database Layer
-    D1[(MySQL DB)]
-    D --> D1
-    
-    %% Database Connections
-    C1 --> D1
-    C3 --> D1
-    C4 --> D1
+    %% Database Interactions
+    D --> D1[(MySQL Database)]
 
     %% External Services
-    E1[Gemini AI]
-    E2[Speech API]
-    E3[TTS API]
-    
-    C1 --> E1
-    C2c --> E2
-    C2f --> E3
+    C1 --> E1[Google Gemini AI]
+    C2 --> E2[Text-to-Speech]
 ```
 
 #### 1.2 Chi Tiết Các Layer và Luồng Xử Lý

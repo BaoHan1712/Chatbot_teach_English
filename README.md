@@ -37,13 +37,13 @@ graph TD
     %% External Services
     C1 --> E1[Model AI]
     C2 --> E2[Text-to-Speech]
-
+<!-- 
     %% Data Flow Connections
     C1 --> |Data chat| D1
     C2 --> |Data voice| D1
     C3 --> |Lesson| D1
     C4 --> |User Management| D1
-    E1 --> |Responses| D1
+    E1 --> |Responses| D1 -->
 ```
 
 #### 1.2 Chi Tiết Các Layer và Luồng Xử Lý

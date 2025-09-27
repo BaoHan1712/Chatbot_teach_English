@@ -414,6 +414,45 @@
         <h1>📚 Quản Lý Bài Học</h1>
     </div>
 
+ 
+        <!-- User Info + Logout (cố định góc trên phải) -->
+        <div class="fixed top-4 right-4 flex items-center space-x-2 z-50">
+            <span class="text-black font-medium text-sm">👤 <span id="usernameDisplay">Khách</span></span>
+            <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm shadow-md transition">Đăng xuất</button>
+        </div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const username = localStorage.getItem("username");
+            const role = localStorage.getItem("role");
+
+            // Chưa login
+            if (!username) {
+                alert("❌ Bạn chưa đăng nhập. Vui lòng login trước khi sử dụng tính năng này.");
+                window.location.href = "/"; 
+                return;
+            }
+
+            // Không phải admin
+            if (role !== "admin") {
+                alert("⛔ Bạn không có quyền truy cập. Chỉ Admin mới được vào.");
+                window.location.href = "/";
+                return;
+            }
+
+            // Nếu đã login + role admin → hiển thị username
+            document.getElementById("usernameDisplay").textContent = username;
+        });
+
+        // Xử lý logout
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
+            window.location.href = "/";
+        });
+        </script>
+
+
     <div class="container">
         <div class="stats">
             <div class="stat-card">

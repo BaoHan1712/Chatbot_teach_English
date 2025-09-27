@@ -348,6 +348,7 @@ def api_show_all():
     """API trả về toàn bộ dữ liệu database dưới dạng JSON"""
     data = get_all_tables_data()
     return jsonify({"status": "success", "result": data})
+
 #////////////////////////// AI voice //////////////////////////////////
 
 # Biến trạng thái ghi âm

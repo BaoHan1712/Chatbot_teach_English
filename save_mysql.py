@@ -191,8 +191,6 @@ def insert_new_user(username, email, password):
     except Error as e:
         print("❌ Lỗi khi thêm user:", e)
         return False
-
-
         
 # Hàm đăng nhập user
 def login_user(email, password):
@@ -285,6 +283,33 @@ def insert_ai_voice(id_user, voice_user, voice_ai, model_ai="gemini 2.0"):
     except Error as e:
         print("❌ Lỗi khi thêm AI_voice:", e)
         return False
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+def count_all_user_lessons():
+    """Trả về danh sách {id_user, total_lessons} của tất cả user"""
+    connection = connect_to_mysql()
+    if connection is None:
+        return []
+
+    try:
+        cursor = connection.cursor(dictionary=True)  # dùng dictionary để dễ map JSON
+        sql = """
+            SELECT u.id AS id_user, u.username, COUNT(l.id_lessons) AS total_lessons
+            FROM users u
+            LEFT JOIN lessons l ON u.id = l.id_user
+            GROUP BY u.id, u.username
+            ORDER BY total_lessons DESC
+        """
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        print("📊 Thống kê số topic của tất cả user:", results)
+        return results
+    except Error as e:
+        print("❌ Lỗi khi thống kê bài học:", e)
+        return []
     finally:
         if connection.is_connected():
             cursor.close()
@@ -415,19 +440,20 @@ def get_all_tables_data():
 
 
 # # Test
-if __name__ == "__main__":
-    create_database()   # 🔹 tạo DB nếu chưa có
-    # create_table()      # 🔹 tạo bảng nếu chưa có
-    # insert_new_user("bao", "bao123@gmail.com", "123")
-    # login_user("hoang123@gmail.com", "123456")
-    create_table_ai_voice() # tạo bảng AI_voice
-    create_table_ai_chat()  # tạo bảng AI_chat
-    create_lessons_table() # Tạo bảng lessons
-    insert_lesson(3, "gia đình", "Nội dung bài học về gia đình cảm nhận về trình độ anh văn")
+# if __name__ == "__main__":
+#     create_database()   # 🔹 tạo DB nếu chưa có
+#     # create_table()      # 🔹 tạo bảng nếu chưa có
+#     # insert_new_user("bao", "bao123@gmail.com", "123")
+#     # login_user("hoang123@gmail.com", "123456")
+#     create_table_ai_voice() # tạo bảng AI_voice
+#     create_table_ai_chat()  # tạo bảng AI_chat
+#     create_lessons_table() # Tạo bảng lessons
+#     # insert_lesson(3, "súng ống", "Nội dung bài học về súng ống ")
     
-    # Thêm hội thoại text
-    insert_ai_chat(3, "Hello AI!", "Xin chào, tôi là AI.")
+#     # # Thêm hội thoại text
+#     # insert_ai_chat(3, "Hello AI!", "Xin chào, tôi là Hoang.")
 
-    # Thêm hội thoại voice
-    insert_ai_voice(3, "voice_user_data_base64_or_text", "voice_ai_data_base64_or_text")
-    show_all_users()
+#     # # Thêm hội thoại voice
+#     # insert_ai_voice(3, "hi, i am Hoang", "voice_ai_data_base64_or_text")
+#     # show_all_users()
+#     total_topics = count_all_user_lessons()

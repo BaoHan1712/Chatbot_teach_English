@@ -26,17 +26,11 @@
             font-size: 1.2rem;
             font-weight: bold;
         }
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
+        .nav-links { display: flex; gap: 20px; }
         .nav-link {
-            color: #adb5bd;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            font-weight: 500;
+            color: #adb5bd; text-decoration: none;
+            padding: 8px 16px; border-radius: 5px;
+            transition: all 0.3s ease; font-weight: 500;
         }
         .nav-link:hover { color: white; background: rgba(255,255,255,0.1); }
         .nav-link.active { color: white; background: #007bff; }
@@ -48,7 +42,7 @@
             text-align: center;
         }
         .header h1 { margin: 0; color: #495057; font-size: 2rem; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
         .progress-table {
             width: 100%; border-collapse: collapse;
@@ -61,12 +55,9 @@
         .progress-table th {
             background: #f8f9fa; font-weight: 600; color: #495057;
         }
-        .progress-bar {
-            background: #e9ecef; border-radius: 20px; overflow: hidden; height: 20px;
-        }
-        .progress-fill {
-            height: 100%; background: #007bff; text-align: center;
-            color: white; font-size: 12px; line-height: 20px;
+        .rank-badge {
+            background: #007bff; color: white;
+            padding: 5px 10px; border-radius: 20px; font-size: 0.9rem;
         }
     </style>
 </head>
@@ -77,7 +68,7 @@
         </div>
         <div class="nav-links">
             <a href="/ad_user" class="nav-link">👥 Users</a>
-            <a href="/ad_progress" class="nav-link active">📊 Lessons</a>
+            <a href="/ad_lesson" class="nav-link active">📊 Lessons</a>
             <a href="/ad_query" class="nav-link">🔍 Query</a>
         </div>
     </nav>
@@ -97,8 +88,8 @@
             <thead>
                 <tr>
                     <th>User</th>
-                    <th>Khóa học</th>
-                    <th>Tiến độ</th>
+                    <th>Số lần tạo bài học</th>
+                    <th>Vị trí</th>
                 </tr>
             </thead>
             <tbody id="progressTableBody"></tbody>
@@ -123,38 +114,47 @@
             }
             document.getElementById("usernameDisplay").textContent = username;
 
-            // Demo data tiến độ học tập
-            const progresses = [
-                { user: "bao", course: "Toán học", percent: 70 },
-                { user: "hoang", course: "Tiếng Anh", percent: 45 },
-                { user: "minh", course: "Khoa học", percent: 90 }
-            ];
-            renderProgress(progresses);
-        });
+              
+    // 🔥 Gọi API backend lấy dữ liệu lessons của tất cả user      
+        document.getElementById("usernameDisplay").textContent = username;
 
-        function renderProgress(list) {
+            // 🔥 Gọi API backend lấy dữ liệu lessons của tất cả user
+            fetch("/count_lessons_all")
+                .then(res => res.json())
+                .then(progresses => {
+                    // Sắp xếp theo số lessons giảm dần (nhiều nhất lên Top 1)
+                    progresses.sort((a, b) => b.total_lessons - a.total_lessons);
+
+                    // Gán thứ hạng
+                    progresses.forEach((p, i) => p.rank = i + 1);
+
+                    renderProgress(progresses);
+                })
+                .catch(err => {
+                    console.error("❌ Lỗi khi gọi API:", err);
+                    alert("Không thể tải dữ liệu từ server!");
+                });
+        });
+          function renderProgress(list) {
             const tbody = document.getElementById("progressTableBody");
             tbody.innerHTML = "";
             list.forEach(p => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>${p.user}</td>
-                    <td>${p.course}</td>
-                    <td>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width:${p.percent}%;">${p.percent}%</div>
-                        </div>
-                    </td>`;
+                    <td>${p.username}</td>
+                    <td>${p.total_lessons}</td>
+                    <td><span class="rank-badge">Top ${p.rank}</span></td>`;
                 tbody.appendChild(row);
             });
         }
 
-        // Logout
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            localStorage.removeItem("username");
-            localStorage.removeItem("role");
-            window.location.href = "/";
-        });
+
+                // Logout
+                document.getElementById("logoutBtn").addEventListener("click", () => {
+                    localStorage.removeItem("username");
+                    localStorage.removeItem("role");
+                    window.location.href = "/";
+                });
     </script>
 </body>
 </html>

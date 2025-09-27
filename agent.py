@@ -340,14 +340,20 @@ def run_query():
         return jsonify({"status": "error", "result": f"❌ Lỗi khi thực hiện query: {e}"})
     finally:
         cursor.close()
-        connection.close()
-    
+        connection.close() 
 
 @app.route("/show_all", methods=["GET"])
 def api_show_all():
     """API trả về toàn bộ dữ liệu database dưới dạng JSON"""
     data = get_all_tables_data()
     return jsonify({"status": "success", "result": data})
+
+
+# API thông kê mức độ học tập user
+@app.route("/count_lessons_all", methods=["GET"])
+def api_count_all_user_lessons():
+    data = count_all_user_lessons()
+    return jsonify(data)
 
 #////////////////////////// AI voice //////////////////////////////////
 

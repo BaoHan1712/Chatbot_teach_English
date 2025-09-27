@@ -8,6 +8,7 @@ DB_USER = "root"
 DB_PASS = "hoang123@"
 DB_NAME = "aichat"
 
+#////////////// ////////////////////////////////////////////////Tạo database và bảng nếu chưa có//////////////////////////////
 # Hàm tạo database nếu chưa có
 def create_database():
     try:
@@ -27,6 +28,7 @@ def create_database():
 # Hàm tạo bảng nếu chưa có
 # Hàm tạo bảng nếu chưa có (và thêm cột role nếu thiếu)
 def create_table():
+    """Tạo bảng users nếu chưa có, và thêm cột role nếu thiếu."""
     try:
         connection = mysql.connector.connect(
             host=DB_HOST,
@@ -60,7 +62,100 @@ def create_table():
     except Error as e:
         print("❌ Lỗi khi tạo bảng:", e)
 
+# Hàm tạo bảng lessons
+def create_lessons_table():
+    try:
+        connection = mysql.connector.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASS,
+            database=DB_NAME
+        )
+        cursor = connection.cursor()
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS lessons (
+                id_lessons INT AUTO_INCREMENT PRIMARY KEY,
+                id_user INT NOT NULL,
+                topic VARCHAR(255) NOT NULL,
+                model_ai VARCHAR(100) DEFAULT 'gemini 2.0',
+                data_lesson LONGTEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+        print("✅ Bảng `lessons` đã sẵn sàng!")
+    except Error as e:
+        print("❌ Lỗi khi tạo bảng lessons:", e)
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+# Hàm tạo bảng AI_voice
+def create_table_ai_voice():
+    """Tạo bảng AI_voice nếu chưa có."""
+    try:
+        connection = connect_to_mysql()
+        if connection is None:
+            return False
+
+        cursor = connection.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS AI_voice (
+                id_chat BIGINT AUTO_INCREMENT PRIMARY KEY,
+                id_user INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                model_AI VARCHAR(100) DEFAULT 'gemini 2.0',
+                voice_user LONGTEXT,
+                voice_ai LONGTEXT,
+                CONSTRAINT fk_ai_voice_user FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+        print("✅ Bảng `AI_voice` đã sẵn sàng!")
+        return True
+    except Error as e:
+        print("❌ Lỗi khi tạo bảng AI_voice:", e)
+        return False
+    finally:
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+# Hàm tạo bảng AI_chat
+def create_table_ai_chat():
+    """Tạo bảng AI_chat nếu chưa có."""
+    try:
+        connection = connect_to_mysql()
+        if connection is None:
+            return False
+
+        cursor = connection.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS AI_chat (
+                id_chat BIGINT AUTO_INCREMENT PRIMARY KEY,
+                id_user INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                model_AI VARCHAR(100) DEFAULT 'gemini 2.0',
+                chat_user LONGTEXT,
+                chat_ai LONGTEXT,
+                CONSTRAINT fk_ai_chat_user FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+        print("✅ Bảng `AI_chat` đã sẵn sàng!")
+        return True
+    except Error as e:
+        print("❌ Lỗi khi tạo bảng AI_chat:", e)
+        return False
+    finally:
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+#///////////////////////////////////////////////////////////////////////////// USER//////////////////////////////////////////////////////////////////////
 
 # Hàm kết nối MySQL
 def connect_to_mysql():
@@ -120,9 +215,82 @@ def login_user(email, password):
         print("❌ Lỗi khi kiểm tra user:", e)
         return None
 
+def insert_lesson(id_user, topic, data_lesson, model_ai="gemini 2.0"):
+    """ lưu lại bài học của user vào bảng lessons """
+    connection = connect_to_mysql()
+    if connection is None:
+        return False
+
+    try:
+        cursor = connection.cursor()
+        sql = """
+            INSERT INTO lessons (id_user, topic, model_ai, data_lesson)
+            VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(sql, (id_user, topic, model_ai, data_lesson))
+        connection.commit()
+        print(f"✅ Bài học mới đã được thêm cho user_id={id_user}, topic={topic}")
+        return True
+    except Error as e:
+        print("❌ Lỗi khi thêm bài học:", e)
+        return False
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+# Hàm thêm dữ liệu vào bảng AI_chat
+def insert_ai_chat(id_user, chat_user, chat_ai, model_ai="gemini 2.0"):
+    """Lưu hội thoại dạng text vào bảng AI_chat."""
+    connection = connect_to_mysql()
+    if connection is None:
+        return False
+
+    try:
+        cursor = connection.cursor()
+        sql = """
+            INSERT INTO AI_chat (id_user, chat_user, chat_ai, model_ai)
+            VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(sql, (id_user, chat_user, chat_ai, model_ai))
+        connection.commit()
+        print(f"✅ Hội thoại mới đã được thêm cho user_id={id_user}")
+        return True
+    except Error as e:
+        print("❌ Lỗi khi thêm AI_chat:", e)
+        return False
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
 
 
-#////////////////////// ADMIN//////////////////////
+# Hàm thêm dữ liệu vào bảng AI_voice
+def insert_ai_voice(id_user, voice_user, voice_ai, model_ai="gemini 2.0"):
+    """Lưu hội thoại dạng giọng nói vào bảng AI_voice."""
+    connection = connect_to_mysql()
+    if connection is None:
+        return False
+
+    try:
+        cursor = connection.cursor()
+        sql = """
+            INSERT INTO AI_voice (id_user, voice_user, voice_ai, model_ai)
+            VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(sql, (id_user, voice_user, voice_ai, model_ai))
+        connection.commit()
+        print(f"✅ Voice mới đã được thêm cho user_id={id_user}")
+        return True
+    except Error as e:
+        print("❌ Lỗi khi thêm AI_voice:", e)
+        return False
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+#//////////////////////////////////////////////////////////////// ADMIN    //////////////////////////////////////////////////////////////
  ## Thêm user mới với quyền admin.
 def admin_insert_user(username, email, password, role):
     connection = connect_to_mysql()
@@ -247,9 +415,19 @@ def get_all_tables_data():
 
 
 # # Test
-# if __name__ == "__main__":
-#     create_database()   # 🔹 tạo DB nếu chưa có
-#     create_table()      # 🔹 tạo bảng nếu chưa có
-#     # insert_new_user("bao", "bao123@gmail.com", "123")
-#     # login_user("hoang123@gmail.com", "123456")
-#     show_all_users()
+if __name__ == "__main__":
+    create_database()   # 🔹 tạo DB nếu chưa có
+    # create_table()      # 🔹 tạo bảng nếu chưa có
+    # insert_new_user("bao", "bao123@gmail.com", "123")
+    # login_user("hoang123@gmail.com", "123456")
+    create_table_ai_voice() # tạo bảng AI_voice
+    create_table_ai_chat()  # tạo bảng AI_chat
+    create_lessons_table() # Tạo bảng lessons
+    insert_lesson(3, "gia đình", "Nội dung bài học về gia đình cảm nhận về trình độ anh văn")
+    
+    # Thêm hội thoại text
+    insert_ai_chat(3, "Hello AI!", "Xin chào, tôi là AI.")
+
+    # Thêm hội thoại voice
+    insert_ai_voice(3, "voice_user_data_base64_or_text", "voice_ai_data_base64_or_text")
+    show_all_users()

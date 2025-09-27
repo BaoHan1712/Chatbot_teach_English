@@ -164,119 +164,6 @@ sequenceDiagram
     end
 ```
 
-### 2. Chi Tiết Các Layer
-
-#### 2.1 User Interface Layer
-- **Web Interface**: Giao diện người dùng chính
-  - Trang chủ (`index.html`)
-  - Trang đăng nhập (`login.html`)
-  - Trang chatbot (`chatbot.html`)
-  - Trang bài học (`lesson.html`)
-  - Trang voice (`voice.html`)
-
-- **Admin Interface**: Giao diện quản trị
-  - Quản lý người dùng (`ad_user.html`)
-  - Quản lý bài học (`ad_lesson.html`)
-  - Quản lý truy vấn (`ad_query.html`)
-
-#### 2.2 Authentication Layer
-```mermaid
-sequenceDiagram
-    participant User
-    participant Auth Layer
-    participant Database
-
-    User->>Auth Layer: Đăng ký/Đăng nhập
-    Auth Layer->>Database: Kiểm tra thông tin
-    Database-->>Auth Layer: Kết quả xác thực
-    Auth Layer-->>User: Phản hồi (Success/Error)
-    
-    Note over Auth Layer: Kiểm tra vai trò (Role)
-    Alt Success
-        Auth Layer->>User: Chuyển hướng theo role
-    else Error
-        Auth Layer->>User: Thông báo lỗi
-    end
-```
-
-#### 2.3 Core Application Layer
-
-##### 2.3.1 Chatbot Engine Flow
-```mermaid
-sequenceDiagram
-    participant User
-    participant ChatEngine
-    participant GeminiAI
-    
-    User->>ChatEngine: Gửi câu hỏi
-    ChatEngine->>GeminiAI: Xử lý prompt
-    GeminiAI-->>ChatEngine: Phản hồi AI
-    ChatEngine-->>User: Kết quả định dạng
-    
-    Note over ChatEngine: Xử lý ngữ cảnh và<br/>tối ưu hóa phản hồi
-```
-
-##### 2.3.2 Voice Processing Flow
-```mermaid
-sequenceDiagram
-    participant User
-    participant VoiceEngine
-    participant TTS
-    
-    User->>VoiceEngine: Ghi âm giọng nói
-    VoiceEngine->>VoiceEngine: Xử lý âm thanh
-    VoiceEngine->>TTS: Chuyển text thành speech
-    TTS-->>User: Phát âm thanh
-```
-
-##### 2.3.3 Lesson Management Flow
-```mermaid
-sequenceDiagram
-    participant Admin
-    participant LessonManager
-    participant Database
-    
-    Admin->>LessonManager: Tạo/Sửa bài học
-    LessonManager->>Database: Lưu nội dung
-    
-    Note over LessonManager: Quản lý cấu trúc<br/>và nội dung bài học
-    
-    User->>LessonManager: Truy cập bài học
-    LessonManager->>Database: Lấy nội dung
-    Database-->>User: Hiển thị bài học
-```
-
-##### 2.3.4 User Management Flow
-```mermaid
-sequenceDiagram
-    participant Admin
-    participant UserManager
-    participant Database
-    
-    Admin->>UserManager: CRUD Operations
-    UserManager->>Database: Thực thi thay đổi
-    Database-->>Admin: Kết quả thao tác
-    
-    Note over UserManager: Quản lý quyền<br/>và thông tin người dùng
-```
-
-#### 2.4 Database Layer
-
-##### Cấu Trúc Database
-```sql
--- Bảng Users
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('user','admin') DEFAULT 'user',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Các bảng khác sẽ được thêm khi cần thiết
-```
-
 ### 3. Luồng Xử Lý Chính
 
 #### 3.1 Luồng Đăng Nhập/Xác Thực
@@ -355,7 +242,7 @@ CREATE TABLE users (
 
 ### Backend (Máy Chủ)
 - **Framework**: Flask (Python)
-- **Tích Hợp AI**: Google Gemini AI
+- **Tích Hợp AI**: Model AI
 - **Xử Lý Giọng Nói**: Text-to-Speech (gTTS)
 - **Cơ Sở Dữ Liệu**: MySQL
 
@@ -415,7 +302,7 @@ sequenceDiagram
 2. **Thiết Lập Môi Trường**
    ```bash
    # Sao chép kho lưu trữ
-   git clone <repository-url>
+   git clone https://github.com/BaoHan1712/Chatbot_teach_English.git
 
    # Cài đặt các gói phụ thuộc
    pip install -r requirements.txt
@@ -470,23 +357,6 @@ Hệ thống sử dụng các tệp cấu hình sau:
 - Xác thực dữ liệu đầu vào
 - Ngăn chặn SQL injection
 
-## Kế Hoạch Phát Triển Tương Lai
-
-1. **Tính Năng Học Tập**
-   - Theo dõi tiến độ nâng cao
-   - Lộ trình học tập cá nhân hóa
-   - Bài tập tương tác
-
-2. **Cải Tiến Kỹ Thuật**
-   - Tính năng chat thời gian thực
-   - Nâng cao nhận dạng giọng nói
-   - Tối ưu hóa hiệu suất
-
-3. **Công Cụ Quản Trị**
-   - Phân tích nâng cao
-   - Quản lý người dùng hàng loạt
-   - Tạo báo cáo tùy chỉnh
-
 ## Đóng Góp
 
 Vui lòng đọc hướng dẫn đóng góp của chúng tôi trước khi gửi pull request.
@@ -494,3 +364,5 @@ Vui lòng đọc hướng dẫn đóng góp của chúng tôi trước khi gửi
 ## Giấy Phép
 
 Dự án này được cấp phép theo Giấy phép MIT - xem tệp LICENSE để biết chi tiết.
+
+Tác giả: github.com/BaoHan1712

@@ -27,12 +27,7 @@ graph TD
     C --> C3[Lesson Management]
     C --> C4[User Management]
 
-    <!-- %% Database Interactions
-    D --> D1[(MySQL Database)]
-    C1 --> D1
-    C2 --> D1
-    C3 --> D1
-    C4 --> D1 -->
+
 
     %% External Services
     C1 --> E1[Model AI]

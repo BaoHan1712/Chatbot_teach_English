@@ -11,6 +11,10 @@ from datetime import datetime
 from sentence_transformers import SentenceTransformer
 import traceback
 
+# from huggingface_hub import login
+# login(token="API_TOKEN_HuggingFace")  # Thay API_TOKEN_HuggingFace 
+
+
 # ==========================
 # 1. Config
 # ==========================
